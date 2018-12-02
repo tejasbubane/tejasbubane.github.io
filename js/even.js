@@ -57,82 +57,6 @@ Even.mobileNavbar = function () {
   });
 };
 
-Even._initToc = function () {
-  var SPACING = 20;
-  var $toc = $('.post-toc');
-  var $footer = $('.post-footer');
-
-  if ($toc.length) {
-    var minScrollTop = $toc.offset().top - SPACING;
-    var maxScrollTop = $footer.offset().top - $toc.height() - SPACING;
-
-    var tocState = {
-      start: {
-        'position': 'absolute',
-        'top': minScrollTop
-      },
-      process: {
-        'position': 'fixed',
-        'top': SPACING
-      },
-      end: {
-        'position': 'absolute',
-        'top': maxScrollTop
-      }
-    };
-
-    $(window).scroll(function () {
-      var scrollTop = $(window).scrollTop();
-
-      if (scrollTop < minScrollTop) {
-        $toc.css(tocState.start);
-      } else if (scrollTop > maxScrollTop) {
-        $toc.css(tocState.end);
-      } else {
-        $toc.css(tocState.process);
-      }
-    });
-  }
-
-  var HEADERFIX = 30;
-  var $toclink = $('.toc-link');
-  var $headerlink = $('.headerlink');
-  var $tocLinkLis = $('.post-toc-content li');
-
-  var headerlinkTop = $.map($headerlink, function (link) {
-    return $(link).offset().top;
-  });
-
-  var headerLinksOffsetForSearch = $.map(headerlinkTop, function (offset) {
-    return offset - HEADERFIX;
-  });
-
-  var searchActiveTocIndex = function searchActiveTocIndex(array, target) {
-    for (var i = 0; i < array.length - 1; i++) {
-      if (target > array[i] && target <= array[i + 1]) return i;
-    }
-    if (target > array[array.length - 1]) return array.length - 1;
-    return -1;
-  };
-
-  $(window).scroll(function () {
-    var scrollTop = $(window).scrollTop();
-    var activeTocIndex = searchActiveTocIndex(headerLinksOffsetForSearch, scrollTop);
-
-    $($toclink).removeClass('active');
-    $($tocLinkLis).removeClass('has-active');
-
-    if (activeTocIndex !== -1) {
-      $($toclink[activeTocIndex]).addClass('active');
-      var ancestor = $toclink[activeTocIndex].parentNode;
-      while (ancestor.tagName !== 'NAV') {
-        $(ancestor).addClass('has-active');
-        ancestor = ancestor.parentNode.parentNode;
-      }
-    }
-  });
-};
-
 Even.fancybox = function () {
   if ($.fancybox) {
     $('.post-content').each(function () {
@@ -183,46 +107,6 @@ Even.chroma = function () {
     var afterHighLight = block.querySelector('pre.chroma > code');
     var lang = afterHighLight ? afterHighLight.className : '';
     block.className += ' ' + lang;
-  }
-};
-
-Even.toc = function () {
-  var tocContainer = document.getElementById('post-toc');
-  if (tocContainer !== null) {
-    var toc = document.getElementById('TableOfContents');
-    if (toc === null) {
-      // toc = true, but there are no headings
-      tocContainer.parentNode.removeChild(tocContainer);
-    } else {
-      this._refactorToc(toc);
-      this._linkToc();
-      this._initToc();
-    }
-  }
-};
-
-Even._refactorToc = function (toc) {
-  // when headings do not start with `h1`
-  var oldTocList = toc.children[0];
-  var newTocList = oldTocList;
-  var temp = void 0;
-  while (newTocList.children.length === 1 && (temp = newTocList.children[0].children[0]).tagName === 'UL') {
-    newTocList = temp;
-  }
-
-  if (newTocList !== oldTocList) toc.replaceChild(newTocList, oldTocList);
-};
-
-Even._linkToc = function () {
-  var links = document.querySelectorAll('#TableOfContents a:first-child');
-  for (var i = 0; i < links.length; i++) {
-    links[i].className += ' toc-link';
-  }for (var num = 1; num <= 6; num++) {
-    var headers = document.querySelectorAll('.post-content>h' + num);
-    for (var _i3 = 0; _i3 < headers.length; _i3++) {
-      var header = headers[_i3];
-      header.innerHTML = '<a href="#' + header.id + '" class="headerlink anchor"><i class="iconfont icon-link"></i></a>' + header.innerHTML;
-    }
   }
 };
 
