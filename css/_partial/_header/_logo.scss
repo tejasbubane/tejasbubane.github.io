@@ -11,6 +11,33 @@
   }
 }
 
+.site-avatar {
+  float: left;
+  width: 70px;
+  height: 70px;
+  margin-right: 15px;
+}
+
+.site-info {
+  float: left;
+}
+
+.site-name {
+  margin: 0;
+  color: #333;
+  cursor: pointer;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.site-description {
+  margin: -5px 0 0 0;
+  color: #666;
+  font-size: 16px;
+}
+
 @include max-screen() {
   .logo-wrapper {
     display: none;

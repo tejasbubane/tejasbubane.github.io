@@ -36,7 +36,8 @@
   <body>
     <div id="mobile-navbar" class="mobile-navbar">
       <div class="mobile-header-logo">
-        <a href="/" class="logo">Home</a>
+        <h1 class="site-name"><a href="/">Tejas Bubane</a></h1>
+        <p class="site-description">Haskell | Clojure | λ</p>
       </div>
       <div class="mobile-navbar-icon">
         <span></span>
@@ -59,20 +60,23 @@
         </a>
       </ul>
     </nav>
-    <div class="container" id="mobile-panel">
+    <div class="container" id="mobile-panel" class="container slideout-panel slideout-panel-left">
       <header id="header" class="header">
-        <div class="logo-wrapper">
-          <a href="/" class="logo">My Blog</a>
+        <a href="/" class="site-avatar">
+          <img src="https://gravatar.com/avatar/848870b4043d5ca319aa3111cb55845b?s=70">
+        </a>
+        <div class="site-info">
+          <h1 class="site-name"><a href="/">Tejas Bubane</a></h1>
+          <p class="site-description">Ruby | Javascript | Haskell | λ</p>
         </div>
 
         <nav class="site-navbar">
           <ul id="menu" class="menu">
             <li class="menu-item">
               <a class="menu-item-link" href="/">Home</a>
-            </li><li class="menu-item">
+            </li>
+            <li class="menu-item">
               <a class="menu-item-link" href="/archive.html">Archives</a>
-            </li><li class="menu-item">
-              <a class="menu-item-link" href="/contact.html">About</a>
             </li>
           </ul>
         </nav>
@@ -81,12 +85,10 @@
       <main role="main">
         <div class="content-wrapper">
           <div id="content" class="content">
-            <section id="posts" class="posts">
-              $body$
-            </section>
+            $body$
             <nav class="pagination">
-              <a class="next" href="https://themes.gohugo.io//theme/hugo-theme-even/page/2/">
-                <span class="next-text">Next</span>
+              <a class="next" href="/archive.html">
+                <span class="next-text">Archives</span>
                 <i class="iconfont icon-right"></i>
               </a>
             </nav>
