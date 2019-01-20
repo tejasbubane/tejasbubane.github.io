@@ -21,7 +21,6 @@ compressScssCompiler = do
     getResourceString
     >>= withItemBody (unixFilter "sass" [ "-s"
                                         , "--scss"
-                                        , "--compass"
                                         , "--style", "compressed"
                                         , "--load-path", "css"
                                         ])
