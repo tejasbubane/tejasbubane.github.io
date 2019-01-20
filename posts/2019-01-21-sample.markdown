@@ -1,0 +1,10 @@
+---
+title: Sample Blog
+tags: sample, test, tags, work
+---
+
+This is beginning paragraph visible on main page.
+
+<!--more-->
+
+This is the remaining post.
