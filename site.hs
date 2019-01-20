@@ -55,11 +55,29 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
 
+    -- Find all tags by meta info in posts/*
+    -- and create corresponding files in tags/*
+    tags <- buildTags "posts/*" (fromCapture "tags/*.html")
+
+    tagsRules tags $ \tag pattern -> do
+      let title = "Posts tagged \"" ++ tag ++ "\""
+      route idRoute
+      compile $ do
+        posts <- recentFirst =<< loadAll pattern
+        let ctx = constField "title" title
+                  `mappend` listField "posts" postCtx (return posts)
+                  `mappend` defaultContext
+
+        makeItem ""
+          >>= loadAndApplyTemplate "templates/tag.html" ctx
+          >>= loadAndApplyTemplate "templates/default.html" ctx
+          >>= relativizeUrls
+
     match "posts/*" $ do
         route $ setExtension "html"
         compile $ pandocCompiler
             >>= saveSnapshot "content"
-            >>= loadAndApplyTemplate "templates/post.html"    postCtx
+            >>= loadAndApplyTemplate "templates/post.html" (ctxWithTags postCtx tags)
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls
 
@@ -83,8 +101,8 @@ main = hakyll $ do
         compile $ do
             posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
             let indexCtx =
-                    listField "posts" teaserCtx (return $ take 5 posts) <>
-                    constField "title" "Home"                           <>
+                    listField "posts" (ctxWithTags teaserCtx tags) (return $ take 5 posts) <>
+                    constField "title" "Home" <>
                     defaultContext
 
             getResourceBody
@@ -96,7 +114,9 @@ main = hakyll $ do
     match "templates/*" $ compile templateBodyCompiler
 
 
---------------------------------------------------------------------------------
+--------------------------------------------------
+-- Functions to modify post context (postCtx)
+--------------------------------------------------
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"                 <>
@@ -105,3 +125,6 @@ postCtx =
 
 teaserCtx :: Context String
 teaserCtx = teaserField "teaser" "content" <> postCtx
+
+ctxWithTags :: Context String -> Tags -> Context String
+ctxWithTags ctx tags = tagsField "tags" tags <> ctx

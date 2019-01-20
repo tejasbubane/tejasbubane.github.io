@@ -3,6 +3,12 @@
     <a class="post-link" href="$url$">$title$</a>
   </h1>
   <div class="post-meta">
-    <span class="post-time"> $date$ </span>
+    <span class="post-time">$date$</span>
+
+    $if(tags)$
+    <div class="post-category">
+      $tags$
+    </div>
+    $endif$
   </div>
 </header>
