@@ -4,7 +4,8 @@ import           Data.Monoid (mappend)
 import           Hakyll
 import qualified Data.ByteString.Lazy.Char8 as C
 import           Text.Jasmine
-
+import Data.List (isSuffixOf)
+import System.FilePath.Posix (takeBaseName,takeDirectory,(</>))
 --------------------------------------------------------------------------------
 -- | Create a JavaScript compiler that minifies the content
 compressJsCompiler :: Compiler (Item String)
@@ -53,6 +54,7 @@ main = hakyll $ do
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
+            >>= cleanIndexUrls
 
     -- Find all tags by meta info in posts/*
     -- and create corresponding files in tags/*
@@ -60,7 +62,7 @@ main = hakyll $ do
 
     tagsRules tags $ \tag pattern -> do
       let title = "Posts tagged \"" ++ tag ++ "\""
-      route idRoute
+      route $ cleanRoute
       compile $ do
         posts <- recentFirst =<< loadAll pattern
         let ctx = constField "title" title
@@ -71,17 +73,19 @@ main = hakyll $ do
           >>= loadAndApplyTemplate "templates/tag.html" ctx
           >>= loadAndApplyTemplate "templates/default.html" ctx
           >>= relativizeUrls
+          >>= cleanIndexUrls
 
     match "posts/*" $ do
-        route $ setExtension "html"
+        route $ cleanRoute
         compile $ pandocCompiler
             >>= saveSnapshot "content"
             >>= loadAndApplyTemplate "templates/post.html" (ctxWithTags postCtx tags)
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls
+            >>= cleanIndexUrls
 
     create ["archive.html"] $ do
-        route idRoute
+        route cleanRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let archiveCtx =
@@ -93,10 +97,10 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
-
+                >>= cleanIndexUrls
 
     match "index.html" $ do
-        route idRoute
+        route $ idRoute
         compile $ do
             posts <- recentFirst =<< loadAllSnapshots "posts/*" "content"
             let indexCtx =
@@ -109,6 +113,7 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/postitem.html" indexCtx
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
                 >>= relativizeUrls
+                >>= cleanIndexUrls
 
     match "templates/*" $ compile templateBodyCompiler
 
@@ -127,3 +132,24 @@ teaserCtx = teaserField "teaser" "content" <> postCtx
 
 ctxWithTags :: Context String -> Tags -> Context String
 ctxWithTags ctx tags = tagsField "tags" tags <> ctx
+
+cleanRoute :: Routes
+cleanRoute = customRoute createIndexRoute
+  where
+    createIndexRoute ident = takeDirectory p </> takeBaseName p </> "index.html"
+      where p = toFilePath ident
+
+cleanIndexUrls :: Item String -> Compiler (Item String)
+cleanIndexUrls = return . fmap (withUrls cleanIndex)
+
+cleanIndexHtmls :: Item String -> Compiler (Item String)
+cleanIndexHtmls = return . fmap (replaceAll pattern replacement)
+    where
+      pattern = "/index.html"
+      replacement = const "/"
+
+cleanIndex :: String -> String
+cleanIndex url
+    | idx `isSuffixOf` url = take (length url - length idx) url
+    | otherwise            = url
+  where idx = "index.html"
