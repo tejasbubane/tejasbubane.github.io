@@ -18,6 +18,8 @@ stack install
 
 #### Development
 
+Use `develop` branch for all development since `master` is reserved for `github pages`.
+
 * Clean existing assets and cache:
 
 ```sh
@@ -55,3 +57,18 @@ stack exec site rebuild
 ```
 
 This will output all static assets to `_site` directory.
+
+Use this command to publish to `master` (only the `_site` directory):
+
+```sh
+git subtree push --prefix _site origin master
+```
+
+In case you want to force-push, first delete master branch there (`develop` branch is default so deleting should be fine) and then push again. This is required because force-pushing on subtree is not allowed for some reason.
+
+```sh
+git push origin --delete master
+git subtree push --prefix _site origin master
+```
+
+Don't forget to push your actual changes on `develop` branch as well.
