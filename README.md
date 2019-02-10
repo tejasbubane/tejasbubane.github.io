@@ -5,7 +5,7 @@ Hosted at: https://tejasbubane.github.io
 ## Requirements
 
 1. [Stack](https://docs.haskellstack.org/en/stable/README/)
-1. [Sass](https://sass-lang.com/install) - for compiling `scss` files.
+1. [Sass](https://sass-lang.com/install) - for compiling `scss` files. Use dart sass.
 
 ## Setup
 
