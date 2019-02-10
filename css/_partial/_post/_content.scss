@@ -94,7 +94,6 @@
     }
   }
 
-  @import 'code';
   @import 'admonition';
 
   .post-summary {
@@ -106,7 +105,7 @@
       color: $theme-color;
       font-size: 1.1em;
       font-family: $global-serif-font-family;
-    
+
       &:hover {
         border-bottom: $post-readMore-border-bottom;
       }
