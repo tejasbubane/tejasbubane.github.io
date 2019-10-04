@@ -43,7 +43,7 @@ class InventorySerializer < ActiveModel::Serializer
   has_one :product
 
   # Return only required attributes here to keep API small
-  class ProductSerializer < ActiveModelSerializers::Model
+  class ProductSerializer < ActiveModel::Serializer
     attributes :id, :name, :price
   end
 end
@@ -55,7 +55,7 @@ class DeliveryOrderSerializer < ActiveModel::Serializer
   has_one :product
 
   # Return only required attributes here to keep API small
-  class ProductSerializer < ActiveModelSerializers::Model
+  class ProductSerializer < ActiveModel::Serializer
     attributes :id, :name
   end
 end
