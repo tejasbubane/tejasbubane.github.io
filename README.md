@@ -46,8 +46,9 @@ stack exec site watch
 livereload _site
 ```
 
-Go to: http://127.0.0.1:35729/
+Go to: http://127.0.0.1:8000/
 
+Make sure you run `dart-sass` and not ruby-sass. Otherwise compilation will fail.
 
 #### Production build
 
