@@ -97,7 +97,8 @@ Now we can do this:
 (fmap . fmap) (+1) [[1,2,3],[4,5]] -- # => [[2,3,4],[5,6]]
 ```
 
-We jumped inside two lists & applied the function `(+1)`. But note those two structures(functors) need not be the same type (list). They can be different (`f1` & `f2`):
+We jumped inside two lists & applied the function `(+1)`. But note those two structures(functors) need not be lists or rather need not even be of the same type.
+They can be different (`f1` & `f2` in above definition), although both must have instances of Functor.
 
 ```haskell
 (fmap . fmap) (+1) [Just 1, Nothing, Just 2]
@@ -107,7 +108,7 @@ We jumped inside two lists & applied the function `(+1)`. But note those two str
 But why limit to just two?
 
 ```haskell
-(fmap . fmap .fmap) (+1) [Just [1], Nothing, Just [2]]
+(fmap . fmap . fmap) (+1) [Just [1], Nothing, Just [2]]
 -- # => [Just [2],Nothing,Just [3]]
 ```
 
