@@ -80,13 +80,13 @@ Output of function `a -> b` (b) is passed to `b -> c`.
 Above example becomes:
 
 ```haskell
-fmap2 . fmap1 :: (a -> b) -> (f2 (f1 a) -> f2 (f1 b))
+(fmap2 . fmap1) :: (a -> b) -> (f2 (f1 a) -> f2 (f1 b))
 ```
 
-Cleaning it up a bit:
+Cleaning it up a bit & adding typeclass constraints:
 
 ```haskell
-fmap . fmap :: (a -> b) -> f1 (f2 a) -> f1 (f2 b)
+(fmap . fmap) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
 ```
 
 Note the entire structure `f1 (f2)` is preserved in the output - only `a`s are transformed to `b`s.
