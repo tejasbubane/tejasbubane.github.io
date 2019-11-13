@@ -3,3 +3,6 @@ code:not(.sourceCode) {
   background-color: rgba(95,131,65,0.1);
 }
 @import "tango";
+code.sourceCode {
+  font-size: 15px;
+}
