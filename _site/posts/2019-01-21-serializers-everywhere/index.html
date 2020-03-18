@@ -100,7 +100,7 @@
 
     
     <div class="post-category">
-      <a href="../../tags/ruby/">ruby</a>
+      <a title="All pages tagged 'ruby'." href="../../tags/ruby/">ruby</a>
     </div>
     
   </div>
@@ -115,29 +115,29 @@
 <p>Assume we have resources like <code>product</code> and <code>inventory</code> with corresponding serializers.</p>
 <p>Now product info is also required in inventory details. Using <a href="https://github.com/rails-api/active_model_serializers/blob/v0.10.6/docs/general/serializers.md#associations"><code>belongs_to</code> association</a> would pick the main product serializer which would render the entire product details which we don’t need. So we create another serializer <code>InventoryProductSerializer</code> because adding some method with hand-rolled json is not a good practice - which is exactly why we use serializers in the first place.</p>
 <p>Then we also have <code>delivery_order</code> - which also needs product info but with slightly different fields. We think of saving those precious bytes on the network by sending only required fields and not single more. So we religiously create <code>DeliveryOrderProductSerializer</code>. This goes on and on…</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><a class="sourceLine" id="cb1-1" title="1"><span class="ex">product_serializer.rb</span></a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="ex">inventory_product_serializer.rb</span></a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="ex">delivery_order_product_serializer.rb</span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="ex">product_serializer.rb</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">inventory_product_serializer.rb</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="ex">delivery_order_product_serializer.rb</span></span></code></pre></div>
 <p>Lets take a moment and see if we can reduce this. Ideally <code>inventory-product</code> serializer will be used <code>**only**</code> by <code>inventory</code> serializer. So why not somehow put it inside <code>InventorySerializer</code> where it belongs?</p>
 <p>We can conveniently take advantage of Ruby’s <code>constant lookup algorithm</code> to do this:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><a class="sourceLine" id="cb2-1" title="1"><span class="kw">class</span> <span class="dt">InventorySerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></a>
-<a class="sourceLine" id="cb2-2" title="2">  attributes <span class="st">:id</span>, <span class="st">:location</span>, <span class="st">:quantity</span></a>
-<a class="sourceLine" id="cb2-3" title="3">  has_one <span class="st">:product</span></a>
-<a class="sourceLine" id="cb2-4" title="4"></a>
-<a class="sourceLine" id="cb2-5" title="5">  <span class="co"># Return only required attributes here to keep API small</span></a>
-<a class="sourceLine" id="cb2-6" title="6">  <span class="kw">class</span> <span class="dt">ProductSerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></a>
-<a class="sourceLine" id="cb2-7" title="7">    attributes <span class="st">:id</span>, <span class="st">:name</span>, <span class="st">:price</span></a>
-<a class="sourceLine" id="cb2-8" title="8">  <span class="kw">end</span></a>
-<a class="sourceLine" id="cb2-9" title="9"><span class="kw">end</span></a></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">class</span> <span class="dt">DeliveryOrderSerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></a>
-<a class="sourceLine" id="cb3-2" title="2">  attributes <span class="st">:id</span>, <span class="st">:quantity</span>, <span class="st">:price</span>, <span class="st">:source</span>, <span class="st">:destination</span></a>
-<a class="sourceLine" id="cb3-3" title="3">  has_one <span class="st">:product</span></a>
-<a class="sourceLine" id="cb3-4" title="4"></a>
-<a class="sourceLine" id="cb3-5" title="5">  <span class="co"># Return only required attributes here to keep API small</span></a>
-<a class="sourceLine" id="cb3-6" title="6">  <span class="kw">class</span> <span class="dt">ProductSerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></a>
-<a class="sourceLine" id="cb3-7" title="7">    attributes <span class="st">:id</span>, <span class="st">:name</span></a>
-<a class="sourceLine" id="cb3-8" title="8">  <span class="kw">end</span></a>
-<a class="sourceLine" id="cb3-9" title="9"><span class="kw">end</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">class</span> <span class="dt">InventorySerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>  attributes <span class="st">:id</span>, <span class="st">:location</span>, <span class="st">:quantity</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  has_one <span class="st">:product</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="co"># Return only required attributes here to keep API small</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="kw">class</span> <span class="dt">ProductSerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>    attributes <span class="st">:id</span>, <span class="st">:name</span>, <span class="st">:price</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>  <span class="kw">end</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="kw">end</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">class</span> <span class="dt">DeliveryOrderSerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>  attributes <span class="st">:id</span>, <span class="st">:quantity</span>, <span class="st">:price</span>, <span class="st">:source</span>, <span class="st">:destination</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  has_one <span class="st">:product</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a></span>
+<span id="cb3-5"><a href="#cb3-5"></a>  <span class="co"># Return only required attributes here to keep API small</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>  <span class="kw">class</span> <span class="dt">ProductSerializer</span> &lt; <span class="dt">ActiveModel</span>::<span class="dt">Serializer</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>    attributes <span class="st">:id</span>, <span class="st">:name</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>  <span class="kw">end</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="kw">end</span></span></code></pre></div>
 <p>While looking up for any constant (here the class constant <code>ProductSerializer</code>), it is first looked up inside the serializer class itself. We have one there and which gets used. The next lookup of outer global <code>ProductSerializer</code> in <code>product_serializer.rb</code> never happens in this case.</p>
 <p>Thus we have achieved colocated concerns. Hope this helps.</p>
 <p>Happy hacking!</p>
