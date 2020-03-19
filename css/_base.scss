@@ -30,21 +30,6 @@ body {
   color: #fff;
 }
 
-// ::-webkit-scrollbar {
-//   width: 8px;
-//   height: 6px;
-// }
-
-// ::-webkit-scrollbar-thumb {
-//   background: lighten($theme-color, 10%);
-//   border-radius: 5px;
-// }
-
-// ::-webkit-scrollbar-track {
-//   background: rgba(211, 211, 211, 0.4);
-//   border-radius: 5px;
-// }
-
 img {
   max-width: 100%;
   height: auto;
@@ -52,8 +37,24 @@ img {
   vertical-align: middle;
 }
 
+.content {
+  a {
+    color: $theme-color;
+    word-break: break-all;
+
+    &:hover {
+      border-bottom: $content-link-border;
+    }
+
+    &.fancybox {
+      border: 0;
+    }
+  }
+
+}
+
 a {
-  color: $global-font-color;
+  color: $theme-color;
   text-decoration: none;
 }
 

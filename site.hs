@@ -49,7 +49,7 @@ main = hakyll $ do
         route   $ constRoute "app.css"
         compile compressScssCompiler
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
+    match (fromList ["setup.markdown"]) $ do
         route   $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
