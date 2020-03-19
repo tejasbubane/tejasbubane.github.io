@@ -38,7 +38,7 @@ img {
 }
 
 .content {
-  a {
+  a:not(.post-link) {
     color: $theme-color;
     word-break: break-all;
 
