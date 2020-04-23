@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152407711-1"></script>
+    <script>
+     window.dataLayer = window.dataLayer || [];
+     function gtag(){dataLayer.push(arguments);}
+     gtag('js', new Date());
+
+     gtag('config', 'UA-152407711-1');
+    </script>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Tejas Bubane's Blog</title>
+    <meta name="renderer" content="webkit" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+
+    <meta name="theme-color" content="#f8f5ec" />
+    <meta name="msapplication-navbutton-color" content="#f8f5ec">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+    <meta name="author" content="tejasbubane" />
+    <meta name="description" content="My personal blog." />
+    <meta name="keywords" content="blog, learnings, haskell, ruby" />
+    <meta name="generator" content="Hakyll" />
+
+    <link href="../../app.css" rel="stylesheet">
+    <!--[if lte IE 9]>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+    <![endif]-->
+
+    <!--[if lt IE 9]>
+      <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+    <div id="mobile-navbar" class="mobile-navbar">
+      <div class="mobile-header-logo">
+        <h1 class="site-name"><a href="../../">Tejas Bubane</a></h1>
+        <p class="site-description">Haskell | Clojure | λ</p>
+      </div>
+      <div class="mobile-navbar-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+    <nav id="mobile-menu" class="mobile-menu slideout-menu">
+      <ul class="mobile-menu-list">
+        <a href="../../">
+          <li class="mobile-menu-item">Home</li>
+        </a>
+        <a href="../../archive">
+          <li class="mobile-menu-item">Archives</li>
+        </a>
+      </ul>
+    </nav>
+    <div class="container" id="mobile-panel" class="container slideout-panel slideout-panel-left">
+      <header id="header" class="header">
+        <a href="../../" class="site-avatar">
+          <img src="https://gravatar.com/avatar/848870b4043d5ca319aa3111cb55845b?s=70">
+        </a>
+        <div class="site-info">
+          <h1 class="site-name"><a href="../../">Tejas Bubane</a></h1>
+          <p class="site-description">Ruby | Javascript | Haskell | λ</p>
+        </div>
+
+        <nav class="site-navbar">
+          <ul id="menu" class="menu">
+            <li class="menu-item">
+              <a class="menu-item-link" href="../../">Home</a>
+            </li>
+            <li class="menu-item">
+              <a class="menu-item-link" href="../../archive">Archives</a>
+            </li>
+            <li class="menu-item">
+              <a class="menu-item-link" href="../../setup">Setup</a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
+      <main role="main">
+        <div class="content-wrapper">
+          <div id="content" class="content">
+            <article class="post">
+  <header class="post-header">
+  <h1 class="post-title">
+    <a class="post-link" href="../../posts/2020-04-22-redis-connection-pool-in-rails/">Redis connection pool in Rails</a>
+  </h1>
+  <div class="post-meta">
+    <span class="post-time">April 22, 2020</span>
+
+    
+    <div class="post-category">
+      <a title="All pages tagged 'ruby'." href="../../tags/ruby/">ruby</a>
+    </div>
+    
+  </div>
+</header>
+
+
+  <div class="post-content">
+    <p>Rails is multi-threaded, but can your redis connection handle it?</p>
+<!--more-->
+<p>Activerecord - rails’ database access library - <a href="https://api.rubyonrails.org/v6.0.2/classes/ActiveRecord/ConnectionAdapters/ConnectionPool.html">comes with inbuilt connection pool</a>. We can change the pool size via <code>config/database.yml</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1"></a><span class="at">production</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="at">  </span><span class="fu">adapter</span><span class="kw">:</span><span class="at"> postgresql</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="at">  </span><span class="fu">pool</span><span class="kw">:</span><span class="at"> </span><span class="dv">20</span></span></code></pre></div>
+<p>We use <a href="https://redis.io/">redis</a> for variety of purposes like caching, queuing, pubsub, etc. But when it comes to connecting to redis, we don’t have any inbuilt connection pool. So generally we end up using just one direct connection, most probably via a configuration or application-level global variable.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># config/initializers/redis.rb</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="dt">REDIS</span> = <span class="dt">Redis</span>.new(<span class="st">host: &quot;10.0.1.1&quot;</span>, <span class="st">port: </span><span class="dv">6380</span>, <span class="st">db: </span><span class="dv">15</span>)</span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co"># accessing data</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="dt">REDIS</span>.get(&lt;key&gt;)</span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="dt">REDIS</span>.set(&lt;key&gt;, &lt;value&gt;)</span></code></pre></div>
+<p>Thanks to the <a href="https://redis.io/topics/benchmarks">ludicrous speed of redis</a>, most queries return in milliseconds &amp; we don’t see any issues even with multiple parallel connections. But note that this is a shared blocking resource. <code>Shared</code> because we have just one connection across multiple application threads &amp; <code>blocking</code> because <a href="https://redis.io/topics/pipelining">on a single connection redis will block the next query until the previous one returns</a>. Which means that this can have cascading effects.</p>
+<h2 id="problem">Problem</h2>
+<p>Let’s do some benchmarking with that single connection:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb3-1"><a href="#cb3-1"></a>require <span class="st">'benchmark'</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co"># simulate blocking shared resource</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="dt">REDIS</span> = <span class="dt">Mutex</span>.new</span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co"># blocks for 10 milliseconds</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>incr = -&gt; { sleep(<span class="fl">0.010</span>) }</span>
+<span id="cb3-8"><a href="#cb3-8"></a></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="dt">Benchmark</span>.bm <span class="kw">do</span> |x|</span>
+<span id="cb3-10"><a href="#cb3-10"></a>  x.report(<span class="st">&quot;single&quot;</span>) { incr.call } <span class="co"># returns in 10 milliseconds</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a></span>
+<span id="cb3-12"><a href="#cb3-12"></a>  threads = []</span>
+<span id="cb3-13"><a href="#cb3-13"></a>  x.report(<span class="st">&quot;multi-threaded&quot;</span>) <span class="kw">do</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a>    <span class="dv">100</span>.times <span class="kw">do</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>      threads &lt;&lt; <span class="dt">Thread</span>.new {</span>
+<span id="cb3-16"><a href="#cb3-16"></a>        <span class="dt">REDIS</span>.synchronize { incr.call }</span>
+<span id="cb3-17"><a href="#cb3-17"></a>      }</span>
+<span id="cb3-18"><a href="#cb3-18"></a>    <span class="kw">end</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a></span>
+<span id="cb3-20"><a href="#cb3-20"></a>    <span class="co"># join to depict how much time the last waiting thread takes</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>    threads.each { |thr| thr.join }</span>
+<span id="cb3-22"><a href="#cb3-22"></a>  <span class="kw">end</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a><span class="kw">end</span></span></code></pre></div>
+<p>And we are in for a surprise!</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a>       <span class="ex">user</span>     system      total        real</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="ex">single</span>  0.000055   0.000018   0.000073 (  0.012773)</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="ex">multi-threaded</span>  0.014485   0.023569   0.038054 (  1.197625)</span></code></pre></div>
+<p>With 100 parallel queries, our result times jump from 10ms to 1 second. This is cascading effect and the load time of 1 second for redis is just plain bad.</p>
+<p>Of-course this is hypothetical, but note that I have considered RTT (round-trip time) for request 10ms considering local connection. For remote connections over HTTP, these can go up to 250-300ms for single query.</p>
+<h2 id="solution">Solution</h2>
+<p>Use <a href="https://github.com/mperham/connection_pool">connection_pool</a> gem. It comes from the creator of <a href="https://sidekiq.org/">sidekiq</a> and is pretty easy to use:</p>
+<p>With rails we need something like this:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># config/initializers/redis.rb</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>pool_size = <span class="dv">20</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="dt">REDIS</span> = <span class="dt">ConnectionPool</span>.new(<span class="st">size: </span>pool_size) <span class="kw">do</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>  <span class="dt">Redis</span>.new(<span class="st">host: </span>&lt;host&gt;, <span class="st">port: </span>&lt;port&gt;)</span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="kw">end</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co"># accessing data</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="dt">REDIS</span>.with <span class="kw">do</span> |conn|</span>
+<span id="cb5-9"><a href="#cb5-9"></a>  conn.get(&lt;key&gt;)</span>
+<span id="cb5-10"><a href="#cb5-10"></a>  conn.set(&lt;key&gt;, &lt;value&gt;)</span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="kw">end</span></span></code></pre></div>
+<p>When required <code>REDIS.with</code> with pick a connection from pool (if available - otherwise wait), perform operations &amp; return connection back to the pool. Usually <code>pool_size</code> will be same as the max number of threads of our application server. <code>pool_size</code> is the max number of redis connections that will be established at any point of time.</p>
+<p>Let’s check benchmarks with <code>connection_pool</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb6-1"><a href="#cb6-1"></a>require <span class="st">'benchmark'</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>require <span class="st">'connection_pool'</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co"># simulate blocking shared resource - but now with a pool of them</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="dt">REDIS</span> = <span class="dt">ConnectionPool</span>.new(<span class="st">size: </span><span class="dv">100</span>) <span class="kw">do</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>  <span class="dt">Mutex</span>.new</span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="kw">end</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="co"># blocks for 10 milliseconds</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>incr = -&gt; { sleep(<span class="fl">0.010</span>) }</span>
+<span id="cb6-11"><a href="#cb6-11"></a></span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="dt">Benchmark</span>.bm <span class="kw">do</span> |x|</span>
+<span id="cb6-13"><a href="#cb6-13"></a>  x.report(<span class="st">&quot;single&quot;</span>) { incr.call } <span class="co"># returns in 10 milliseconds</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a></span>
+<span id="cb6-15"><a href="#cb6-15"></a>  threads = []</span>
+<span id="cb6-16"><a href="#cb6-16"></a>  x.report(<span class="st">&quot;multi-threaded&quot;</span>) <span class="kw">do</span></span>
+<span id="cb6-17"><a href="#cb6-17"></a>    <span class="dv">100</span>.times <span class="kw">do</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a>      threads &lt;&lt; <span class="dt">Thread</span>.new {</span>
+<span id="cb6-19"><a href="#cb6-19"></a>        <span class="dt">REDIS</span>.with { |conn|</span>
+<span id="cb6-20"><a href="#cb6-20"></a>          conn.synchronize { incr.call }</span>
+<span id="cb6-21"><a href="#cb6-21"></a>        }</span>
+<span id="cb6-22"><a href="#cb6-22"></a>      }</span>
+<span id="cb6-23"><a href="#cb6-23"></a>    <span class="kw">end</span></span>
+<span id="cb6-24"><a href="#cb6-24"></a></span>
+<span id="cb6-25"><a href="#cb6-25"></a>    <span class="co"># join to depict how much time the last waiting thread takes</span></span>
+<span id="cb6-26"><a href="#cb6-26"></a>    threads.each { |thr| thr.join }</span>
+<span id="cb6-27"><a href="#cb6-27"></a>  <span class="kw">end</span></span>
+<span id="cb6-28"><a href="#cb6-28"></a><span class="kw">end</span></span></code></pre></div>
+<p>And here are the results:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a>       <span class="ex">user</span>     system      total        real</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="ex">single</span>  0.000048   0.000040   0.000088 (  0.010704)</span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="ex">multi-threaded</span>  0.005984   0.006500   0.012484 (  0.017754)</span></code></pre></div>
+<p>Much better!</p>
+<p><em>Refer <a href="https://gist.github.com/tejasbubane/18fcb441f7bf067e5963f1af262a2945">this gist</a> for all benchmarking code.</em></p>
+  </section>
+
+  <div class="post-copyright"></div>
+</article>
+
+          </div>
+        </div>
+      </main>
+
+      <footer id="footer" class="footer">
+        <div class="social-links">
+          <a target="_blank" href="mailto:tejasbubane@gmail.com" class="iconfont icon-email" title="email"></a>
+          <a target="_blank" href="https://twitter.com/tejasbubane" class="iconfont icon-twitter" title="twitter"></a>
+          <a target="_blank" href="https://github.com/tejasbubane" class="iconfont icon-github" title="github"></a>
+          <a target="_blank" href="https://stackoverflow.com/users/3507206/tejasbubane" class="iconfont icon-stack-overflow" title="stack-overflow"></a>
+          <a target="_blank" href="https://www.linkedin.com/in/tejasbubane" class="iconfont icon-linkedin" title="linkedin"></a>
+          <a target="_blank" href="https://www.instagram.com/tejasbubane/" class="iconfont icon-instagram" title="instagram"></a>
+          <a target="_blank" href="https://themes.gohugo.io//theme/hugo-theme-even/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+        </div>
+
+        <div class="copyright">
+          <span class="power-by">
+            Powered by <a class="hexo-link" href="https://jaspervdj.be/hakyll/">Hakyll</a>
+          </span>
+          <span class="division">|</span>
+          <span class="theme-info">
+            Theme -
+            <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+          </span>
+          <span class="division">|</span>
+          <span class="theme-info">
+            Source Code -
+            <a class="theme-link" href="https://github.com/tejasbubane/tejasbubane.github.io">Repo</a>
+          </span>
+
+
+          <span class="copyright-year">
+            &copy;
+            2018 -
+            2019
+            <span class="heart">
+              <i class="iconfont icon-heart"></i>
+            </span>
+            <span class="author">Tejas Bubane</span>
+          </span>
+        </div>
+      </footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div>
+    <script type=" text/javascript" src="js/even.js"></script>
+    <script type=" text/javascript" src="js/fancybox-3.1.20.js"></script>
+    <script type=" text/javascript" src="js/jquery-3.2.1.js"></script>
+    <script type=" text/javascript" src="js/main.js"></script>
+    <script type=" text/javascript" src="js/slideout-1.0.1.js"></script>
+  </body>
+</html>
