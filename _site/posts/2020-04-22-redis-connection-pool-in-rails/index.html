@@ -113,11 +113,12 @@
   <div class="post-content">
     <p>Rails is multi-threaded, but can your redis connection handle it?</p>
 <!--more-->
+<p><strong>TLDR:</strong> Use <a href="https://github.com/mperham/connection_pool">connection_pool</a> gem.</p>
 <p>Activerecord - rails’ database access library - <a href="https://api.rubyonrails.org/v6.0.2/classes/ActiveRecord/ConnectionAdapters/ConnectionPool.html">comes with inbuilt connection pool</a>. We can change the pool size via <code>config/database.yml</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode yml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1"></a><span class="at">production</span></span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="at">  </span><span class="fu">adapter</span><span class="kw">:</span><span class="at"> postgresql</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a><span class="at">  </span><span class="fu">pool</span><span class="kw">:</span><span class="at"> </span><span class="dv">20</span></span></code></pre></div>
-<p>We use <a href="https://redis.io/">redis</a> for variety of purposes like caching, queuing, pubsub, etc. But when it comes to connecting to redis, we don’t have any inbuilt connection pool. So generally we end up using just one direct connection, most probably via a configuration or application-level global variable.</p>
+<p>We use <a href="https://redis.io/">redis</a> for variety of purposes like caching, queuing, pubsub, etc. But when it comes to connecting to redis, we don’t have any inbuilt connection pool. So generally we end up using just one direct connection, mostly via a configuration or application-level global variable.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># config/initializers/redis.rb</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="dt">REDIS</span> = <span class="dt">Redis</span>.new(<span class="st">host: &quot;10.0.1.1&quot;</span>, <span class="st">port: </span><span class="dv">6380</span>, <span class="st">db: </span><span class="dv">15</span>)</span>
@@ -155,8 +156,8 @@
 <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a>       <span class="ex">user</span>     system      total        real</span>
 <span id="cb4-2"><a href="#cb4-2"></a><span class="ex">single</span>  0.000055   0.000018   0.000073 (  0.012773)</span>
 <span id="cb4-3"><a href="#cb4-3"></a><span class="ex">multi-threaded</span>  0.014485   0.023569   0.038054 (  1.197625)</span></code></pre></div>
-<p>With 100 parallel queries, our result times jump from 10ms to 1 second. This is cascading effect and the load time of 1 second for redis is just plain bad.</p>
-<p>Of-course this is hypothetical, but note that I have considered RTT (round-trip time) for request 10ms considering local connection. For remote connections over HTTP, these can go up to 250-300ms for single query.</p>
+<p>With 100 parallel queries, our result times jumped from 10ms to 1 second. This is cascading effect and the load time of 1 second for redis is just plain bad.</p>
+<p>Of-course this is hypothetical, but note that I have considered RTT (round-trip time) for request 10ms considering local connection. For remote connections over HTTP, these can go up to 250-300ms for a single query.</p>
 <h2 id="solution">Solution</h2>
 <p>Use <a href="https://github.com/mperham/connection_pool">connection_pool</a> gem. It comes from the creator of <a href="https://sidekiq.org/">sidekiq</a> and is pretty easy to use:</p>
 <p>With rails we need something like this:</p>

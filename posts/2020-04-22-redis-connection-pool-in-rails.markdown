@@ -7,6 +7,8 @@ Rails is multi-threaded, but can your redis connection handle it?
 
 <!--more-->
 
+**TLDR:** Use [connection_pool][4] gem.
+
 Activerecord - rails' database access library - [comes with inbuilt connection pool][1]. We can change the pool size via `config/database.yml`:
 
 ```yml
@@ -16,7 +18,7 @@ production
 ```
 
 We use [redis][2] for variety of purposes like caching, queuing, pubsub, etc. But when it comes to connecting to redis, we don't have any inbuilt connection pool.
-So generally we end up using just one direct connection, most probably via a configuration or application-level global variable.
+So generally we end up using just one direct connection, mostly via a configuration or application-level global variable.
 
 ```ruby
 # config/initializers/redis.rb
@@ -70,11 +72,11 @@ single  0.000055   0.000018   0.000073 (  0.012773)
 multi-threaded  0.014485   0.023569   0.038054 (  1.197625)
 ```
 
-With 100 parallel queries, our result times jump from 10ms to 1 second.
+With 100 parallel queries, our result times jumped from 10ms to 1 second.
 This is cascading effect and the load time of 1 second for redis is just plain bad.
 
 Of-course this is hypothetical, but note that I have considered RTT (round-trip time) for request 10ms
-considering local connection. For remote connections over HTTP, these can go up to 250-300ms for single query.
+considering local connection. For remote connections over HTTP, these can go up to 250-300ms for a single query.
 
 ## Solution
 
