@@ -126,7 +126,7 @@
 <span id="cb2-5"><a href="#cb2-5"></a><span class="co"># accessing data</span></span>
 <span id="cb2-6"><a href="#cb2-6"></a><span class="dt">REDIS</span>.get(&lt;key&gt;)</span>
 <span id="cb2-7"><a href="#cb2-7"></a><span class="dt">REDIS</span>.set(&lt;key&gt;, &lt;value&gt;)</span></code></pre></div>
-<p>Thanks to the <a href="https://redis.io/topics/benchmarks">ludicrous speed of redis</a>, most queries return in milliseconds &amp; we don’t see any issues even with multiple parallel connections. But note that this is a shared blocking resource. <code>Shared</code> because we have just one connection across multiple application threads &amp; <code>blocking</code> because <a href="https://redis.io/topics/pipelining">on a single connection redis will block the next query until the previous one returns</a>. Which means that this can have cascading effects.</p>
+<p>Thanks to the <a href="https://redis.io/topics/benchmarks">ludicrous speed of redis</a>, most queries return in milliseconds &amp; we don’t see any issues even with multiple parallel connections. But note that this is a shared blocking resource. <code>Shared</code> because we have just one connection across multiple application threads &amp; <code>blocking</code> because on a single connection <a href="https://redis.io/topics/pipelining">redis will block the next query until the previous one returns</a>. Which means that this can have cascading effects.</p>
 <h2 id="problem">Problem</h2>
 <p>Let’s do some benchmarking with that single connection:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb3-1"><a href="#cb3-1"></a>require <span class="st">'benchmark'</span></span>
@@ -172,7 +172,8 @@
 <span id="cb5-9"><a href="#cb5-9"></a>  conn.get(&lt;key&gt;)</span>
 <span id="cb5-10"><a href="#cb5-10"></a>  conn.set(&lt;key&gt;, &lt;value&gt;)</span>
 <span id="cb5-11"><a href="#cb5-11"></a><span class="kw">end</span></span></code></pre></div>
-<p>When required <code>REDIS.with</code> with pick a connection from pool (if available - otherwise wait), perform operations &amp; return connection back to the pool. Usually <code>pool_size</code> will be same as the max number of threads of our application server. <code>pool_size</code> is the max number of redis connections that will be established at any point of time.</p>
+<p>When required <code>REDIS.with</code> will pick a connection from the pool (if available - otherwise wait), perform operations &amp; return connection back to the pool. <code>pool_size</code> is the max number of redis connections that will be established at any point of time. Connections get created as and when required, but never exceed the <code>pool_size</code>.</p>
+<p>It seems reasonable to keep <code>pool_size</code> equal to max number of threads of our application server.</p>
 <p>Let’s check benchmarks with <code>connection_pool</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb6-1"><a href="#cb6-1"></a>require <span class="st">'benchmark'</span></span>
 <span id="cb6-2"><a href="#cb6-2"></a>require <span class="st">'connection_pool'</span></span>
