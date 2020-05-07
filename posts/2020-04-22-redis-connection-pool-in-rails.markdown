@@ -32,7 +32,7 @@ REDIS.set(<key>, <value>)
 
 Thanks to the [ludicrous speed of redis][3], most queries return in milliseconds & we don't see any issues even with multiple parallel connections.
 But note that this is a shared blocking resource. `Shared` because we have just one connection across multiple application threads & `blocking` because
-[on a single connection redis will block the next query until the previous one returns][6]. Which means that this can have cascading effects.
+on a single connection [redis will block the next query until the previous one returns][6]. Which means that this can have cascading effects.
 
 ## Problem
 
@@ -98,10 +98,12 @@ REDIS.with do |conn|
 end
 ```
 
-When required `REDIS.with` with pick a connection from pool (if available - otherwise wait),
+When required `REDIS.with` will pick a connection from the pool (if available - otherwise wait),
 perform operations & return connection back to the pool.
-Usually `pool_size` will be same as the max number of threads of our application server.
 `pool_size` is the max number of redis connections that will be established at any point of time.
+Connections get created as and when required, but never exceed the `pool_size`.
+
+It seems reasonable to keep `pool_size` equal to max number of threads of our application server.
 
 Let's check benchmarks with `connection_pool`:
 
