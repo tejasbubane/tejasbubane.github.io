@@ -22,3 +22,9 @@
   @import '_post/footer';
   @import '_post/outdated';
 }
+
+@include max-screen() {
+  .post {
+    padding: $post-mobile-padding;
+  }
+}
