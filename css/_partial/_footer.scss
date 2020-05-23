@@ -4,7 +4,44 @@
 
 .footer {
   margin-top: $footer-margin-top;
+}
 
-  @import "_footer/social";
-  @import "_footer/copyright";
+.social-links {
+  text-align: center;
+
+  .iconfont {
+    font-size: $social-icon-font-size;
+
+    & + .iconfont {
+      margin-left: $social-link-margin-left;
+    }
+
+    &:hover {
+      color: $theme-color;
+    }
+  }
+}
+
+.built-with {
+  margin: $copyright-margin;
+  color: $dark-gray;
+  text-align: center;
+  font-family: $global-serif-font-family;
+
+  .hexo-link,
+  .theme-link {
+    color: $theme-color;
+  }
+
+  .made-with-love {
+    display: block;
+
+    .heart {
+      font-size: 14px;
+    }
+  }
+}
+
+.icon-heart {
+  color: red;
 }
