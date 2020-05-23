@@ -151,7 +151,11 @@
 <span id="cb5-9"><a href="#cb5-9"></a>  conn.get(&lt;key&gt;)</span>
 <span id="cb5-10"><a href="#cb5-10"></a>  conn.set(&lt;key&gt;, &lt;value&gt;)</span>
 <span id="cb5-11"><a href="#cb5-11"></a><span class="kw">end</span></span></code></pre></div>
-<p>When required <code>REDIS.with</code> will pick a connection from the pool (if available - otherwise wait), perform operations &amp; return connection back to the pool. <code>pool_size</code> is the max number of redis connections that will be established at any point of time. Connections get created as and when required, but never exceed the <code>pool_size</code>.</p>
+<p>Here’s how this code (and connection pools in general) work:</p>
+<ul>
+<li><code>.with</code> will pick a connection from the pool. A new connection is created if no free connection is available. This connection is passed to the block &amp; returned back to the pool upon completion.</li>
+<li><code>pool_size</code> is the max number of connections that will be established at any point of time. Threads calling <code>.with</code> will have to wait for free connection if this limit is reached.</li>
+</ul>
 <p>It seems reasonable to keep <code>pool_size</code> equal to max number of threads of our application server.</p>
 <p>Let’s check benchmarks with <code>connection_pool</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode ruby"><code class="sourceCode ruby"><span id="cb6-1"><a href="#cb6-1"></a>require <span class="st">'benchmark'</span></span>
@@ -187,7 +191,7 @@
 <span id="cb7-2"><a href="#cb7-2"></a><span class="ex">single</span>  0.000048   0.000040   0.000088 (  0.010704)</span>
 <span id="cb7-3"><a href="#cb7-3"></a><span class="ex">multi-threaded</span>  0.005984   0.006500   0.012484 (  0.017754)</span></code></pre></div>
 <p>Much better!</p>
-<p><em>Refer <a href="https://gist.github.com/tejasbubane/18fcb441f7bf067e5963f1af262a2945">this gist</a> for all benchmarking code.</em></p>
+<p>And this is why <code>activerecord</code> also comes with a default connection pool.</p>
   </section>
 
   <div class="post-copyright"></div>

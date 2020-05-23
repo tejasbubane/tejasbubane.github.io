@@ -98,10 +98,12 @@ REDIS.with do |conn|
 end
 ```
 
-When required `REDIS.with` will pick a connection from the pool (if available - otherwise wait),
-perform operations & return connection back to the pool.
-`pool_size` is the max number of redis connections that will be established at any point of time.
-Connections get created as and when required, but never exceed the `pool_size`.
+Here's how this code (and connection pools in general) work:
+
+* `.with` will pick a connection from the pool. A new connection is created if no free connection is available.
+  This connection is passed to the block & returned back to the pool upon completion.
+* `pool_size` is the max number of connections that will be established at any point of time.
+  Threads calling `.with` will have to wait for free connection if this limit is reached.
 
 It seems reasonable to keep `pool_size` equal to max number of threads of our application server.
 
@@ -148,7 +150,7 @@ multi-threaded  0.005984   0.006500   0.012484 (  0.017754)
 
 Much better!
 
-_Refer [this gist][7] for all benchmarking code._
+And this is why `activerecord` also comes with a default connection pool.
 
 [1]: https://api.rubyonrails.org/v6.0.2/classes/ActiveRecord/ConnectionAdapters/ConnectionPool.html
 [2]: https://redis.io/
