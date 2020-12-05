@@ -27,3 +27,6 @@ even_menu = [
     {url = "$BASE_URL", name = "Home"},
     {url = "$BASE_URL/tags", name = "Tags"}
 ]
+even_profile_name = "Tejas Bubane"
+even_profile_image = "https://gravatar.com/avatar/848870b4043d5ca319aa3111cb55845b?s=70"
+even_profile_info = "Ruby | Javascript | Haskell | λ"
