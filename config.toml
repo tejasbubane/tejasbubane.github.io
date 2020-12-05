@@ -1,0 +1,33 @@
+# The URL the site will be built for
+base_url = "https://tejasbubane.github.io"
+
+# Whether to automatically compile all Sass files in the sass directory
+compile_sass = true
+
+# Whether to do syntax highlighting
+# Theme can be customised by setting the `highlight_theme` variable to a theme supported by Zola
+highlight_code = true
+
+# Whether to build a search index to be used later on by a JavaScript library
+build_search_index = true
+
+theme = "even"
+
+highlight_theme = "solarized-light"
+
+generate_feed = true
+
+taxonomies = [
+    {name = "tags", rss = true},
+]
+
+[extra]
+even_title = "Tejas' Blog"
+even_menu = [
+    {url = "$BASE_URL", name = "Home"},
+    {url = "$BASE_URL/tags", name = "Tags"},
+    {url = "$BASE_URL/setup", name = "Setup"}
+]
+even_profile_name = "Tejas Bubane"
+even_profile_image = "https://gravatar.com/avatar/848870b4043d5ca319aa3111cb55845b?s=70"
+even_profile_info = "Ruby | Javascript | Haskell | λ"
