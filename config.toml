@@ -16,9 +16,12 @@ theme = "even"
 generate_feed = true
 
 taxonomies = [
-    {name = "categories", rss = true},
     {name = "tags", rss = true},
 ]
 
 [extra]
 even_title = "Tejas' Blog"
+even_menu = [
+    {url = "$BASE_URL", name = "Home"},
+    {url = "$BASE_URL/tags", name = "Tags"}
+]

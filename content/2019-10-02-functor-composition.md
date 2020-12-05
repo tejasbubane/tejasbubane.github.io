@@ -1,7 +1,8 @@
 +++
 title = "Functor Composition"
-tags = ["haskell"]
 path = "posts/2019-10-02-functor-composition"
+[taxonomies]
+tags = ["haskell"]
 +++
 
 Composition is the beauty of functional programming & haskell with it's typeclasses excels at this.

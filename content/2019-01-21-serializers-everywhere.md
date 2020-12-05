@@ -1,7 +1,8 @@
 +++
 title = "Serializers Everywhere"
-tags = ["ruby"]
 path = "posts/2019-01-21-serializers-everywhere"
+[taxonomies]
+tags = ["ruby"]
 +++
 
 Manage multiple versions of [JSON serializers](https://github.com/rails-api/active_model_serializers) in a [Rails](https://rubyonrails.org/) application with ease.

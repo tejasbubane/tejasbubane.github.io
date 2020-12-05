@@ -1,7 +1,8 @@
 +++
 title = "Redis connection pool in Rails"
-tags = ["ruby"]
 path = "posts/2020-04-22-redis-connection-pool-in-rails"
+[taxonomies]
+tags = ["ruby"]
 +++
 
 Rails is multi-threaded, but can your redis connection handle it?
