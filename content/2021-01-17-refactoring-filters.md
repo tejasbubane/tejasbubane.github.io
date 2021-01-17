@@ -14,12 +14,12 @@ The code I was refactoring was large, but one repetition particularly stood out:
 ```ruby
 # app/models/user.rb
 
-def self.filter
-  if params[:status].present?
-    User.where(status: params[:status]
+def self.filter(filters)
+  if filters[:status].present?
+    User.where(status: filters[:status]
   end
-  if params[:location_id].present?
-    User.where(location_id: params[:location_id])
+  if filters[:location_id].present?
+    User.where(location_id: filters[:location_id])
   end
   # and so on...
 end
@@ -41,7 +41,7 @@ Time to flex [rspec][1] muscles :muscle:. **Yeah TDD!**
 # spec/models/user_spec.rb
 
 it "filters users by status" do
-  # Arrange users...
+  # Create some users - Arrange
   filtered_users = User.filter(status: "pending").pluck(:id) # Act
   expect(filtered_users).to match_array(users.map(&:id)) # Assert
 end
@@ -55,7 +55,7 @@ Now for the real test.. We naturally expect all records to be returned if no fil
 # spec/models/user_spec.rb
 
 it "returns all users if no status filter applied" do
-  # Arrange users...
+  # Create some users - Arrange
   filtered_users = User.filter(status: nil).pluck(:id) # Act
   expect(filtered_users).to match_array(User.pluck(:id)) # Assert
 end
@@ -83,8 +83,8 @@ ActiveRecord expects a [Relation object][3] for chaining to work. Try creating a
 ```ruby
 # app/models/user.rb
 
-def where_if(params, attribute:)
-  data = options[attribute]
+def where_if(filters, attribute:)
+  data = filters[attribute]
   return all unless data
 
   where(attribute => data)
@@ -96,11 +96,11 @@ Changing the `User.filter` method:
 ```ruby
 # app/models/user.rb
 
-def self.filter(params)
-  where_if(params, :status)
-    .where_if(params, :location_id)
-    .where_if(params, :is_active)
-    .where_if(params, :locale)
+def self.filter(filters)
+  where_if(filters, :status)
+    .where_if(filters, :location_id)
+    .where_if(filters, :is_active)
+    .where_if(filters, :locale)
     # and some more...
 end
 ```
@@ -113,8 +113,8 @@ Taking it a step further, the application had few more listing pages which means
 # app/models/concerns/filterable.rb
 
 module Filterable
-  def where_if(params, attribute:, parameter: nil)
-    data = parameter ? options[parameter] : options[attribute]
+  def where_if(filters, attribute:, parameter: nil)
+    data = parameter ? filters[parameter] : filters[attribute]
     return all unless data
 
     where(attribute => data)
@@ -122,7 +122,7 @@ module Filterable
 end
 ```
 
-And now we can `include Filterable` in all those models having filter. I also went ahead and separated `attribute` and `parameter` so that it works even in cases where parameter name from frontend does not match the database attribute name in backend.
+And now we can `include Filterable` in all those models having filter. I also went ahead and separated `attribute` and `parameter` which helps in cases where parameter name from frontend does not match the database attribute name in backend.
 
 [1]: https://rspec.info/
 [2]: https://guides.rubyonrails.org/active_record_querying.html
