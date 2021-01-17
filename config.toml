@@ -7,7 +7,6 @@ generate_feed = true
 taxonomies = [
     {name = "tags", rss = true},
 ]
-minify_html = true
 
 [markdown]
 highlight_code = true
