@@ -33,7 +33,7 @@ My first thoughts were:
 
 * Why do we need those `if` conditions? Without them, we can just chain those `where` clauses and this code would read so much better!
 
-Let's try removing the conditions. Ohh wait, this code does not have tests! :scream:
+Let us try removing the conditions. Ohh wait, this code does not have tests! :scream:
 
 Time to flex [rspec][1] muscles :muscle:. **Yeah TDD!**
 
@@ -46,8 +46,9 @@ it "filters users by status" do
   expect(filtered_users).to match_array(users.map(&:id)) # Assert
 end
 ```
-Run tests - passes.
-Remove "if" - passes. As expected.
+Run tests - passes :white_check_mark:
+
+Remove "if" - passes :white_check_mark: As expected.
 
 Now for the real test.. We naturally expect all records to be returned if no filter is applied.
 
@@ -60,8 +61,9 @@ it "returns all users if no status filter applied" do
   expect(filtered_users).to match_array(User.pluck(:id)) # Assert
 end
 ```
-Run tests - passes.
-Remove "if" - `fails`. There you go. That is why we need the condition.
+Run tests - passes :white_check_mark:
+
+Remove "if" - `fails` :x: There you go. That is why we need the condition.
 
 To see what exactly is causing this: _** Hops into REPL **_
 
