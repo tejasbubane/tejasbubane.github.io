@@ -24,3 +24,5 @@ even_menu = [
 even_profile_name = "Tejas Bubane"
 even_profile_image = "https://gravatar.com/avatar/848870b4043d5ca319aa3111cb55845b?s=70"
 even_profile_info = "Ruby | Javascript | Haskell | λ"
+even_add_google_analytics = true
+even_gtag_tracking_id = "UA-152407711-1"
