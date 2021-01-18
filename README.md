@@ -23,6 +23,12 @@ For more usage instructions [refer this](https://www.getzola.org/documentation/g
 
 Theme used is [even](https://www.getzola.org/themes/even/). Even though `zola` has direct support for this theme, I needed some customizations, so [I ended up forking the main theme](https://github.com/tejasbubane/even/). The customized theme is used as [submodule in this repo](./themes).
 
+Make changes to the theme repo, push and then update submodule from this repo:
+
+```sh
+git submodule update --remote
+```
+
 ### Deploying
 
 After making changes and verifying in browser, just commit and push changes. [Github Actions](./.github/workflows/zola.yml) will build static pages and deploy to [Github pages](https://pages.github.com/) automatically.
