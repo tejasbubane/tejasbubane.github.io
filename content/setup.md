@@ -13,7 +13,7 @@ I am a programmer with close to 7 years of experience. I build websites & APIs w
 
 My primary computer at the moment is a Thinkpad E14. It is comparatively lightweight with a very comfortable keyboard.
 
-I am not a heavy phone user - whatsapp & twitter are my primary apps. So I generally prefer mid-range android phones so I don't need to worry about damaging or losing it. I currently own a [Samsung M30](https://www.samsung.com/in/smartphones/galaxy-m30-m305f-3gb/SM-M305FMBEINS/) with 3GB RAM & Android 10.
+I am not a heavy phone user - whatsapp & twitter are my primary apps. So I generally prefer mid-range android phones so I don't need to worry about damaging or losing it. I currently own a [Samsung M30](https://www.samsung.com/in/smartphones/galaxy-m30-m305f-3gb/SM-M305FMBEINS/).
 
 Headphones are [Sennheiser CX 275 S](https://www.amazon.in/Sennheiser-CX-275-Universal-Headphone/dp/B008V6T1IW). I prefer in-ear since they are light & easy to carry around.
 
@@ -27,7 +27,7 @@ Headphones are [Sennheiser CX 275 S](https://www.amazon.in/Sennheiser-CX-275-Uni
 
 * I switched to [Firefox](https://www.mozilla.org/en-US/firefox/) as my primary browser after its [quantum release](https://blog.mozilla.org/blog/2017/11/14/introducing-firefox-quantum/) and never looked back.
 
-* Terminal is [iTerm 2](https://www.iterm2.com/) with [zsh](https://www.zsh.org/) using my [custom config](https://github.com/tejasbubane/dotfiles).
+* For terminal I use [zsh](https://www.zsh.org/) using my [custom config](https://github.com/tejasbubane/dotfiles).
 
 * For video calls I prefer [Zoom](https://zoom.us/) since it is comparatively less memory intensive.
 
