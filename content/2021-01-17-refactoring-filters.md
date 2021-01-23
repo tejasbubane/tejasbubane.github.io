@@ -93,7 +93,9 @@ def where_if(filters, attribute:)
 end
 ```
 
-Changing the `User.filter` method:
+The secret sauce here is [ActiveRecord's all method][4] which returns `scope` (Relation) object of all queries applied until this point. And we know that if we have a [Relation][3] object, we can chain methods.
+
+Refactoring `User.filter` method:
 
 ```ruby
 # app/models/user.rb
@@ -129,3 +131,4 @@ And now we can `include Filterable` in all those models having filter. I also we
 [1]: https://rspec.info/
 [2]: https://guides.rubyonrails.org/active_record_querying.html
 [3]: https://api.rubyonrails.org/v6.1.0/classes/ActiveRecord/Relation.html
+[4]: https://apidock.com/rails/v6.0.0/ActiveRecord/Scoping/Named/ClassMethods/all
