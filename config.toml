@@ -1,4 +1,6 @@
 # The URL the site will be built for
+title = "Tejas' Blog"
+description = "Thoughts and learnings on writing better software"
 base_url = "https://tejasbubane.github.io"
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = true
