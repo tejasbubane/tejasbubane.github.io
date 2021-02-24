@@ -9,9 +9,9 @@ Yesterday I was reading [curried (partial) functions in Scala][11] and I remembe
 
 <!-- more -->
 
-This was with a [ReactJS][1] [SPA][2] which used [Redux][2] for managing state.
+This was with a [ReactJS][1] [SPA][2] which used [Redux][3] for managing state.
 
-**Note:** This blogpost assumes that the reader has basic understanding of [Redux][2] - namely [defining][13] and [combining][14] reducers.
+**Note:** This blogpost assumes that the reader has basic understanding of [Redux][3] - namely [defining][13] and [combining][14] reducers.
 
 The application I worked on was fetching data from backend APIs with paginated results and uniform response structure.
 
