@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152407711-1"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-152407711-1');
+        </script>
+      
+
+      <meta name="description" content="Thoughts and learnings on writing better software">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Tejas&#x27; Blog - Refactoring Filters</title>
+
+      
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="https://tejasbubane.github.io/atom.xml">
+      
+
+      
+          <script defer src="https://cdnjs.cloudflare.com/ajax/libs/slideout/1.0.1/slideout.min.js"></script>
+          
+      
+
+      
+          <link rel="stylesheet" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;site.css">
+          
+      
+
+      <link rel="preconnect" href="https://fonts.gstatic.com">
+      <!--  Main font = Inter -->
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+      <!-- Monospace Font for Code snippets = Fira Code -->
+      <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+
+      
+      
+    </head>
+
+    <body>
+        <div class="container">
+
+            <div id="mobile-navbar" class="mobile-navbar">
+              <div class="mobile-navbar-icon icon-out">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+            <nav id="mobile-menu" class="mobile-menu slideout-menu slideout-menu-left">
+              <ul class="mobile-menu-list">
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                            Home
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                            Tags
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                            Setup
+                        </a>
+                    </li>
+                
+              </ul>
+            </nav>
+
+            <header id="header">
+
+              
+              <div class="site-info">
+                <h1 class="site-name"><a href="https:&#x2F;&#x2F;tejasbubane.github.io">Tejas Bubane</a></h1>
+                <p class="site-description">Ruby | Javascript | Haskell | λ</p>
+              </div>
+
+                <nav class="menu">
+                    <ul>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                                    Home
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                                    Tags
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                                    Setup
+                                </a>
+                            </li>
+                        
+                    </ul>
+                </nav>
+            </header>
+
+            <main>
+                <div class="content" id="mobile-panel">
+                    
+
+
+
+<article class="post">
+    
+    <header class="post__header">
+        <h1 class="post__title">
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2021-01-17-refactoring-filters&#x2F;">Refactoring Filters</a>
+        </h1>
+        <div class="post__meta">
+          <span class="post__time">January 17, 2021</span>
+          
+          <span class="post-tags">
+            
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags&#x2F;ruby&#x2F;">#ruby</a>
+            
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags&#x2F;refactoring&#x2F;">#refactoring</a>
+            
+          </span>
+          
+        </div>
+    </header>
+
+    <div class="post-content">
+      <p>Recently I was working on refactoring some unwieldy code for filtering data. Here's a short story of how it went 🙂.</p>
+<span id="continue-reading"></span>
+<p>The code I was refactoring was large, but one repetition particularly stood out:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#93a1a1;"># app/models/user.rb
+
+</span><span style="color:#859900;">def </span><span style="color:#d33682;">self</span><span style="color:#657b83;">.</span><span style="color:#b58900;">filter</span><span style="color:#657b83;">(</span><span style="color:#268bd2;">filters</span><span style="color:#657b83;">)
+  </span><span style="color:#859900;">if</span><span style="color:#657b83;"> filters[</span><span style="color:#2aa198;">:status</span><span style="color:#657b83;">].present?
+    </span><span style="color:#859900;">User</span><span style="color:#657b83;">.where(</span><span style="color:#2aa198;">status:</span><span style="color:#657b83;"> filters[</span><span style="color:#2aa198;">:status</span><span style="color:#657b83;">]
+  </span><span style="color:#859900;">end
+  if</span><span style="color:#657b83;"> filters[</span><span style="color:#2aa198;">:location_id</span><span style="color:#657b83;">].present?
+    </span><span style="color:#859900;">User</span><span style="color:#657b83;">.where(</span><span style="color:#2aa198;">location_id:</span><span style="color:#657b83;"> filters[</span><span style="color:#2aa198;">:location_id</span><span style="color:#657b83;">])
+  </span><span style="color:#859900;">end
+  </span><span style="color:#93a1a1;"># and so on...
+</span><span style="color:#859900;">end
+</span></code></pre>
+<p>The UI had a large set of filters for filtering through a list - which is what this code does - filters through records from database.</p>
+<p>My first thoughts were:</p>
+<ul>
+<li>
+<p>Why is this code so verbose?</p>
+</li>
+<li>
+<p>Why do we need those <code>if</code> conditions? Without them, we can just chain those <code>where</code> clauses and this code would read so much better!</p>
+</li>
+</ul>
+<p>Let us try removing the conditions. Ohh wait, this code does not have tests! 😱</p>
+<p>Time to flex <a rel="noopener" target="_blank" href="https://rspec.info/">rspec</a> muscles 💪. <strong>Yeah TDD!</strong></p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#93a1a1;"># spec/models/user_spec.rb
+
+</span><span style="color:#657b83;">it </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">filters users by status</span><span style="color:#839496;">&quot; </span><span style="color:#859900;">do
+  </span><span style="color:#93a1a1;"># Create some users - Arrange
+</span><span style="color:#657b83;">  filtered_users = </span><span style="color:#859900;">User</span><span style="color:#657b83;">.filter(</span><span style="color:#2aa198;">status: </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">pending</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">).pluck(</span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">) </span><span style="color:#93a1a1;"># Act
+</span><span style="color:#657b83;">  expect(filtered_users).to match_array(users.map(</span><span style="color:#859900;">&amp;</span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">)) </span><span style="color:#93a1a1;"># Assert
+</span><span style="color:#859900;">end
+</span></code></pre>
+<p>Run tests - passes ✅</p>
+<p>Remove &quot;if&quot; - passes ✅ As expected.</p>
+<p>Now for the real test.. We naturally expect all records to be returned if no filter is applied.</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#93a1a1;"># spec/models/user_spec.rb
+
+</span><span style="color:#657b83;">it </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">returns all users if no status filter applied</span><span style="color:#839496;">&quot; </span><span style="color:#859900;">do
+  </span><span style="color:#93a1a1;"># Create some users - Arrange
+</span><span style="color:#657b83;">  filtered_users = </span><span style="color:#859900;">User</span><span style="color:#657b83;">.filter(</span><span style="color:#2aa198;">status: </span><span style="color:#b58900;">nil</span><span style="color:#657b83;">).pluck(</span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">) </span><span style="color:#93a1a1;"># Act
+</span><span style="color:#657b83;">  expect(filtered_users).to match_array(</span><span style="color:#859900;">User</span><span style="color:#657b83;">.pluck(</span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">)) </span><span style="color:#93a1a1;"># Assert
+</span><span style="color:#859900;">end
+</span></code></pre>
+<p>Run tests - passes ✅</p>
+<p>Remove &quot;if&quot; - <code>fails</code> ❌ There you go. That is why we need the condition.</p>
+<p>To see what exactly is causing this: <em>** Hops into REPL **</em></p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-sh" data-lang="sh"><span style="color:#b58900;">irb</span><span style="color:#657b83;">(main)&gt; User.count
+=&gt; </span><span style="color:#6c71c4;">10
+</span><span style="color:#b58900;">irb</span><span style="color:#657b83;">(main)&gt; User.where(</span><span style="color:#b58900;">status: </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">pending</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">).count
+   (</span><span style="color:#b58900;">1.0ms</span><span style="color:#657b83;">)  SELECT COUNT(</span><span style="color:#859900;">*</span><span style="color:#657b83;">) </span><span style="color:#b58900;">FROM </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">users</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;"> WHERE </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">users</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">.</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">status</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;"> = </span><span style="color:#859900;">$</span><span style="color:#268bd2;">1  </span><span style="color:#859900;">[</span><span style="color:#657b83;">[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">status</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">, </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">pending</span><span style="color:#839496;">&quot;</span><span style="color:#859900;">]</span><span style="color:#657b83;">]
+=&gt; </span><span style="color:#6c71c4;">4
+</span><span style="color:#b58900;">irb</span><span style="color:#657b83;">(main)&gt; User.where(</span><span style="color:#b58900;">status:</span><span style="color:#657b83;"> nil).count
+   (</span><span style="color:#b58900;">0.9ms</span><span style="color:#657b83;">)  SELECT COUNT(</span><span style="color:#859900;">*</span><span style="color:#657b83;">) </span><span style="color:#b58900;">FROM </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">users</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;"> WHERE </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">users</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">.</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">status</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;"> IS NULL
+=&gt; </span><span style="color:#6c71c4;">0
+</span></code></pre>
+<p>Fair enough. <a rel="noopener" target="_blank" href="https://guides.rubyonrails.org/active_record_querying.html">ActiveRecord</a> gets <code>nil</code>, it filters by <code>NULL</code>. Let us see if we can find a way to somehow still chain those methods.</p>
+<p>ActiveRecord expects a <a rel="noopener" target="_blank" href="https://api.rubyonrails.org/v6.1.0/classes/ActiveRecord/Relation.html">Relation object</a> for chaining to work. Try creating a generic method:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#93a1a1;"># app/models/user.rb
+
+</span><span style="color:#859900;">def </span><span style="color:#b58900;">where_if</span><span style="color:#657b83;">(</span><span style="color:#268bd2;">filters</span><span style="color:#657b83;">, </span><span style="color:#268bd2;">attribute</span><span style="color:#657b83;">:)
+  data = filters[attribute]
+  </span><span style="color:#859900;">return</span><span style="color:#657b83;"> all </span><span style="color:#859900;">unless</span><span style="color:#657b83;"> data
+
+  where(attribute =&gt; data)
+</span><span style="color:#859900;">end
+</span></code></pre>
+<p>The secret sauce here is <a rel="noopener" target="_blank" href="https://apidock.com/rails/v6.0.0/ActiveRecord/Scoping/Named/ClassMethods/all">ActiveRecord's all method</a> which returns <code>scope</code> (Relation) object of all queries applied until this point. And we know that if we have a <a rel="noopener" target="_blank" href="https://api.rubyonrails.org/v6.1.0/classes/ActiveRecord/Relation.html">Relation</a> object, we can chain methods.</p>
+<p>Refactoring <code>User.filter</code> method:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#93a1a1;"># app/models/user.rb
+
+</span><span style="color:#859900;">def </span><span style="color:#d33682;">self</span><span style="color:#657b83;">.</span><span style="color:#b58900;">filter</span><span style="color:#657b83;">(</span><span style="color:#268bd2;">filters</span><span style="color:#657b83;">)
+  where_if(filters, </span><span style="color:#2aa198;">:status</span><span style="color:#657b83;">)
+    .where_if(filters, </span><span style="color:#2aa198;">:location_id</span><span style="color:#657b83;">)
+    .where_if(filters, </span><span style="color:#2aa198;">:is_active</span><span style="color:#657b83;">)
+    .where_if(filters, </span><span style="color:#2aa198;">:locale</span><span style="color:#657b83;">)
+    </span><span style="color:#93a1a1;"># and some more...
+</span><span style="color:#859900;">end
+</span></code></pre>
+<p>Much better! 🎉</p>
+<p>Taking it a step further, the application had few more listing pages which means other models with similar <code>.filter</code> method. Our <code>.where_if</code> method is generic enough to be used by all of them.</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#93a1a1;"># app/models/concerns/filterable.rb
+
+</span><span style="color:#859900;">module </span><span style="color:#b58900;">Filterable
+  </span><span style="color:#859900;">def </span><span style="color:#b58900;">where_if</span><span style="color:#657b83;">(</span><span style="color:#268bd2;">filters</span><span style="color:#657b83;">, </span><span style="color:#268bd2;">attribute</span><span style="color:#657b83;">:, </span><span style="color:#268bd2;">parameter</span><span style="color:#657b83;">: </span><span style="color:#b58900;">nil</span><span style="color:#657b83;">)
+    data = parameter </span><span style="color:#859900;">?</span><span style="color:#657b83;"> filters[parameter] </span><span style="color:#859900;">:</span><span style="color:#657b83;"> filters[attribute]
+    </span><span style="color:#859900;">return</span><span style="color:#657b83;"> all </span><span style="color:#859900;">unless</span><span style="color:#657b83;"> data
+
+    where(attribute =&gt; data)
+  </span><span style="color:#859900;">end
+end
+</span></code></pre>
+<p>And now we can <code>include Filterable</code> in all those models having filter. I also went ahead and separated <code>attribute</code> and <code>parameter</code> which helps in cases where parameter name from frontend does not match the database attribute name in backend.</p>
+
+    </div>
+
+    
+    
+
+    <div class="post-footer">
+        
+            
+                <div class="post-nav">
+                    
+                        <a class="previous" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2020-04-22-redis-connection-pool-in-rails&#x2F;">‹ Redis connection pool in Rails</a>
+                    
+                    
+                        <a class="next" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2021-02-22-currying-reducers&#x2F;">Currying Reducers ›</a>
+                    
+                    
+                    
+                </div>
+            
+
+        
+
+    </div>
+
+    
+    
+</article>
+
+
+                </div>
+            </main>
+
+            
+            
+        </div>
+
+      
+          <script type="text/javascript" src="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;even.js" ></script>
+      
+    </body>
+
+</html>

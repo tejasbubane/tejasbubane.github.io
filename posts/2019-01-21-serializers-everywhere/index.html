@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152407711-1"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-152407711-1');
+        </script>
+      
+
+      <meta name="description" content="Thoughts and learnings on writing better software">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Tejas&#x27; Blog - Serializers Everywhere</title>
+
+      
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="https://tejasbubane.github.io/atom.xml">
+      
+
+      
+          <script defer src="https://cdnjs.cloudflare.com/ajax/libs/slideout/1.0.1/slideout.min.js"></script>
+          
+      
+
+      
+          <link rel="stylesheet" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;site.css">
+          
+      
+
+      <link rel="preconnect" href="https://fonts.gstatic.com">
+      <!--  Main font = Inter -->
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+      <!-- Monospace Font for Code snippets = Fira Code -->
+      <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+
+      
+      
+    </head>
+
+    <body>
+        <div class="container">
+
+            <div id="mobile-navbar" class="mobile-navbar">
+              <div class="mobile-navbar-icon icon-out">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+            <nav id="mobile-menu" class="mobile-menu slideout-menu slideout-menu-left">
+              <ul class="mobile-menu-list">
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                            Home
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                            Tags
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                            Setup
+                        </a>
+                    </li>
+                
+              </ul>
+            </nav>
+
+            <header id="header">
+
+              
+              <div class="site-info">
+                <h1 class="site-name"><a href="https:&#x2F;&#x2F;tejasbubane.github.io">Tejas Bubane</a></h1>
+                <p class="site-description">Ruby | Javascript | Haskell | λ</p>
+              </div>
+
+                <nav class="menu">
+                    <ul>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                                    Home
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                                    Tags
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                                    Setup
+                                </a>
+                            </li>
+                        
+                    </ul>
+                </nav>
+            </header>
+
+            <main>
+                <div class="content" id="mobile-panel">
+                    
+
+
+
+<article class="post">
+    
+    <header class="post__header">
+        <h1 class="post__title">
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2019-01-21-serializers-everywhere&#x2F;">Serializers Everywhere</a>
+        </h1>
+        <div class="post__meta">
+          <span class="post__time">January 21, 2019</span>
+          
+          <span class="post-tags">
+            
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags&#x2F;ruby&#x2F;">#ruby</a>
+            
+          </span>
+          
+        </div>
+    </header>
+
+    <div class="post-content">
+      <p>Manage multiple versions of <a rel="noopener" target="_blank" href="https://github.com/rails-api/active_model_serializers">JSON serializers</a> in a <a rel="noopener" target="_blank" href="https://rubyonrails.org/">Rails</a> application with ease.</p>
+<span id="continue-reading"></span>
+<p><strong>Aside:</strong> Even though Rails has an <a rel="noopener" target="_blank" href="https://api.rubyonrails.org/classes/ActiveModel/Serializers/JSON.html#method-i-as_json">inbuilt mechanism</a>
+to serialize domain objects,
+<a rel="noopener" target="_blank" href="https://github.com/rails-api/active_model_serializers">ActiveModel Serializers</a> (AMS) is a
+popular library for decoupling the serialization logic from database layer. This post assumes usage of AMS.</p>
+<p>Change is the only constant in software development and it is the view or presentation layer
+that changes the most. In case of API-only apps, JSON schema is the view.</p>
+<p>Assume we have resources like <code>product</code> and <code>inventory</code> with corresponding serializers.</p>
+<p>Now product info is also required in inventory details.
+Using <a rel="noopener" target="_blank" href="https://github.com/rails-api/active_model_serializers/blob/v0.10.6/docs/general/serializers.md#associations"><code>belongs_to</code> association</a>
+would pick the main product serializer which would render the entire product details which we don't need.
+So we create another serializer <code>InventoryProductSerializer</code> because adding some method with hand-rolled json is not a good practice - which is exactly why we use serializers in the first place.</p>
+<p>Then we also have <code>delivery_order</code> - which also needs product info but with slightly different fields.
+We think of saving those precious bytes on the network by sending only required fields and not single more. So we religiously create <code>DeliveryOrderProductSerializer</code>.
+This goes on and on...</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-sh" data-lang="sh"><span style="color:#b58900;">product_serializer.rb
+inventory_product_serializer.rb
+delivery_order_product_serializer.rb
+</span></code></pre>
+<p>Lets take a moment and see if we can reduce this. Ideally <code>inventory-product</code> serializer will be used <code>**only**</code> by <code>inventory</code> serializer.
+So why not somehow put it inside <code>InventorySerializer</code> where it belongs?</p>
+<p>We can conveniently take advantage of Ruby's <code>constant lookup algorithm</code> to do this:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#b58900;">class InventorySerializer </span><span style="color:#657b83;">&lt; </span><span style="color:#859900;">ActiveModel</span><span style="color:#268bd2;">::Serializer
+</span><span style="color:#657b83;">  attributes </span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:location</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:quantity
+</span><span style="color:#657b83;">  has_one </span><span style="color:#2aa198;">:product
+
+  </span><span style="color:#93a1a1;"># Return only required attributes here to keep API small
+  </span><span style="color:#b58900;">class ProductSerializer </span><span style="color:#657b83;">&lt; </span><span style="color:#859900;">ActiveModel</span><span style="color:#268bd2;">::Serializer
+</span><span style="color:#657b83;">    attributes </span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:name</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:price
+  </span><span style="color:#859900;">end
+end
+</span></code></pre><pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#b58900;">class DeliveryOrderSerializer </span><span style="color:#657b83;">&lt; </span><span style="color:#859900;">ActiveModel</span><span style="color:#268bd2;">::Serializer
+</span><span style="color:#657b83;">  attributes </span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:quantity</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:price</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:source</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:destination
+</span><span style="color:#657b83;">  has_one </span><span style="color:#2aa198;">:product
+
+  </span><span style="color:#93a1a1;"># Return only required attributes here to keep API small
+  </span><span style="color:#b58900;">class ProductSerializer </span><span style="color:#657b83;">&lt; </span><span style="color:#859900;">ActiveModel</span><span style="color:#268bd2;">::Serializer
+</span><span style="color:#657b83;">    attributes </span><span style="color:#2aa198;">:id</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">:name
+  </span><span style="color:#859900;">end
+end
+</span></code></pre>
+<p>While looking up for any constant (here the class constant <code>ProductSerializer</code>), it is first looked up inside the serializer class itself.
+We have one there and which gets used. The next lookup of outer global <code>ProductSerializer</code> in <code>product_serializer.rb</code> never happens in this case.</p>
+<p>Thus we have achieved colocated concerns. Hope this helps.</p>
+<p>Happy hacking!</p>
+
+    </div>
+
+    
+    
+
+    <div class="post-footer">
+        
+            
+                <div class="post-nav">
+                    
+                    
+                        <a class="next" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2019-10-02-functor-composition&#x2F;">Functor Composition ›</a>
+                    
+                    
+                    
+                </div>
+            
+
+        
+
+    </div>
+
+    
+    
+</article>
+
+
+                </div>
+            </main>
+
+            
+            
+        </div>
+
+      
+          <script type="text/javascript" src="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;even.js" ></script>
+      
+    </body>
+
+</html>

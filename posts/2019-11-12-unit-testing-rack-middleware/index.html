@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152407711-1"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-152407711-1');
+        </script>
+      
+
+      <meta name="description" content="Thoughts and learnings on writing better software">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Tejas&#x27; Blog - Unit testing rack middleware</title>
+
+      
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="https://tejasbubane.github.io/atom.xml">
+      
+
+      
+          <script defer src="https://cdnjs.cloudflare.com/ajax/libs/slideout/1.0.1/slideout.min.js"></script>
+          
+      
+
+      
+          <link rel="stylesheet" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;site.css">
+          
+      
+
+      <link rel="preconnect" href="https://fonts.gstatic.com">
+      <!--  Main font = Inter -->
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+      <!-- Monospace Font for Code snippets = Fira Code -->
+      <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+
+      
+      
+    </head>
+
+    <body>
+        <div class="container">
+
+            <div id="mobile-navbar" class="mobile-navbar">
+              <div class="mobile-navbar-icon icon-out">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+            <nav id="mobile-menu" class="mobile-menu slideout-menu slideout-menu-left">
+              <ul class="mobile-menu-list">
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                            Home
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                            Tags
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                            Setup
+                        </a>
+                    </li>
+                
+              </ul>
+            </nav>
+
+            <header id="header">
+
+              
+              <div class="site-info">
+                <h1 class="site-name"><a href="https:&#x2F;&#x2F;tejasbubane.github.io">Tejas Bubane</a></h1>
+                <p class="site-description">Ruby | Javascript | Haskell | λ</p>
+              </div>
+
+                <nav class="menu">
+                    <ul>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                                    Home
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                                    Tags
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                                    Setup
+                                </a>
+                            </li>
+                        
+                    </ul>
+                </nav>
+            </header>
+
+            <main>
+                <div class="content" id="mobile-panel">
+                    
+
+
+
+<article class="post">
+    
+    <header class="post__header">
+        <h1 class="post__title">
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2019-11-12-unit-testing-rack-middleware&#x2F;">Unit testing rack middleware</a>
+        </h1>
+        <div class="post__meta">
+          <span class="post__time">November 12, 2019</span>
+          
+          <span class="post-tags">
+            
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags&#x2F;ruby&#x2F;">#ruby</a>
+            
+          </span>
+          
+        </div>
+    </header>
+
+    <div class="post-content">
+      <p>Underneath (almost) all Ruby web application lies the <a rel="noopener" target="_blank" href="http://rack.github.io/">Rack</a> architecture.
+With minimal interface, it is simple to write a middleware. Let's see how to test it.</p>
+<span id="continue-reading"></span>
+<p>A middleware is anything which responds to <code>call</code> method (<a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Duck_typing">duck-typing</a>).</p>
+<p><strong>Aside:</strong> Lambdas and procs in Ruby can be executed with <code>.call</code> so they can be middlewares as well.</p>
+<p>Our example middleware allows requests to pass through only if the required headers are present:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#b58900;">class BlockActions
+  </span><span style="color:#859900;">def </span><span style="color:#b58900;">initialize</span><span style="color:#657b83;">(</span><span style="color:#268bd2;">app</span><span style="color:#657b83;">)
+    </span><span style="color:#859900;">@</span><span style="color:#268bd2;">app </span><span style="color:#657b83;">= app
+  </span><span style="color:#859900;">end
+
+  def </span><span style="color:#b58900;">call</span><span style="color:#657b83;">(</span><span style="color:#268bd2;">env</span><span style="color:#657b83;">)
+    </span><span style="color:#859900;">unless</span><span style="color:#657b83;"> env[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">HTTP_X_CLIENT</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] == </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">mobile</span><span style="color:#839496;">&quot; </span><span style="color:#859900;">&amp;&amp;</span><span style="color:#657b83;"> env[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">HTTP_X_MOBILE_USER_ID</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">]
+      </span><span style="color:#859900;">return </span><span style="color:#657b83;">[
+        </span><span style="color:#6c71c4;">400</span><span style="color:#657b83;">, </span><span style="color:#93a1a1;"># status
+        </span><span style="color:#657b83;">{ </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">Content-Type</span><span style="color:#839496;">&quot; </span><span style="color:#657b83;">=&gt; </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">application/json</span><span style="color:#839496;">&quot; </span><span style="color:#657b83;">}, </span><span style="color:#93a1a1;"># headers
+        </span><span style="color:#657b83;">[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">Invalid Request</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] </span><span style="color:#93a1a1;"># response body
+      </span><span style="color:#657b83;">]
+    </span><span style="color:#859900;">end
+    @</span><span style="color:#268bd2;">app</span><span style="color:#657b83;">.call(env)
+  </span><span style="color:#859900;">end
+end
+</span></code></pre>
+<p>Now in order to test this, we have to write <a rel="noopener" target="_blank" href="https://guides.rubyonrails.org/testing.html#integration-testing">integration tests</a>
+which is fine, but they are slow. Especially if you want to
+benchmark the middleware to see if it is not doing some nasty thing in some edgecase that bumps up your response times.</p>
+<p>As described before, rack middleware is a simple class with call method. Let's test it in isolation:</p>
+<p>We need 2 things: the middleware instance &amp; env to be passed in. Middleware instance is simple class instance, but to create env,
+we will use <a rel="noopener" target="_blank" href="https://www.rubydoc.info/gems/rack/Rack/MockRequest">MockRequest</a></p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#859900;">Rack</span><span style="color:#657b83;">::</span><span style="color:#859900;">MockRequest</span><span style="color:#657b83;">.env_for(</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">/</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">, </span><span style="color:#2aa198;">method: :get</span><span style="color:#657b83;">)
+</span></code></pre>
+<p>Our middleware does not care about routes so it might as well be:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#859900;">Rack</span><span style="color:#657b83;">::</span><span style="color:#859900;">MockRequest</span><span style="color:#657b83;">.env_for
+</span></code></pre>
+<p>Putting it into specs:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-ruby" data-lang="ruby"><span style="color:#657b83;">describe </span><span style="color:#b58900;">BlockActions </span><span style="color:#859900;">do
+  </span><span style="color:#93a1a1;"># Mock env to pass in middleware
+</span><span style="color:#657b83;">  let(</span><span style="color:#2aa198;">:env</span><span style="color:#657b83;">) { </span><span style="color:#859900;">Rack</span><span style="color:#657b83;">::</span><span style="color:#859900;">MockRequest</span><span style="color:#657b83;">.env_for }
+
+  </span><span style="color:#93a1a1;"># dummy app to validate success
+</span><span style="color:#657b83;">  let(</span><span style="color:#2aa198;">:app</span><span style="color:#657b83;">) { -&gt;(env) { [</span><span style="color:#6c71c4;">200</span><span style="color:#657b83;">, {}, </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">success</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] } }
+
+  subject { </span><span style="color:#859900;">BlockActions</span><span style="color:#657b83;">.</span><span style="color:#859900;">new</span><span style="color:#657b83;">(app) }
+
+  it </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">allows if client &amp; user-id headers are present</span><span style="color:#839496;">&quot; </span><span style="color:#859900;">do
+</span><span style="color:#657b83;">    env[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">HTTP_X_CLIENT</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] = </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">mobile</span><span style="color:#839496;">&quot;
+</span><span style="color:#657b83;">    env[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">HTTP_X_MOBILE_USER_ID</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] = </span><span style="color:#6c71c4;">1
+</span><span style="color:#657b83;">    status, _headers, _response = subject.call(env)
+    expect(status).to eq(</span><span style="color:#6c71c4;">200</span><span style="color:#657b83;">)
+  </span><span style="color:#859900;">end
+
+</span><span style="color:#657b83;">  it </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">does not allow if client is missing</span><span style="color:#839496;">&quot; </span><span style="color:#859900;">do
+</span><span style="color:#657b83;">    env[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">HTTP_X_MOBILE_USER_ID</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] = </span><span style="color:#6c71c4;">1
+</span><span style="color:#657b83;">    status, _headers, _response = subject.call(env)
+    expect(status).to eq(</span><span style="color:#6c71c4;">400</span><span style="color:#657b83;">)
+  </span><span style="color:#859900;">end
+
+</span><span style="color:#657b83;">  it </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">does not allow if mobile-user-id is missing</span><span style="color:#839496;">&quot; </span><span style="color:#859900;">do
+</span><span style="color:#657b83;">    env[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">HTTP_X_CLIENT</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] = </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">mobile</span><span style="color:#839496;">&quot;
+</span><span style="color:#657b83;">    status, _headers, _response = subject.call(env)
+    expect(status).to eq(</span><span style="color:#6c71c4;">400</span><span style="color:#657b83;">)
+  </span><span style="color:#859900;">end
+
+</span><span style="color:#657b83;">  it </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">does not allow if client is not mobile</span><span style="color:#839496;">&quot; </span><span style="color:#859900;">do
+</span><span style="color:#657b83;">    env[</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">HTTP_X_CLIENT</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">] = </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">jared</span><span style="color:#839496;">&quot;
+</span><span style="color:#657b83;">    status, _headers, _response = subject.call(env)
+    expect(status).to eq(</span><span style="color:#6c71c4;">400</span><span style="color:#657b83;">)
+  </span><span style="color:#859900;">end
+end
+</span></code></pre>
+<p>Because these are unit tests they run pretty fast:</p>
+<pre style="background-color:#fdf6e3;">
+<code><span style="color:#657b83;">Finished in 0.03861 seconds (files took 0.09118 seconds to load)
+4 examples, 0 failures
+</span></code></pre>
+<p>This approach allows us to test all cases &amp; also <a rel="noopener" target="_blank" href="https://blog.heroku.com/benchmarking-rack-middleware">benchmark the middleware</a>.</p>
+<p><em>All code from this blog can be found in <a rel="noopener" target="_blank" href="https://gist.github.com/tejasbubane/c046640bfb1964e2678aaa138ca8e4bb">this executable script</a>.</em></p>
+
+    </div>
+
+    
+    
+
+    <div class="post-footer">
+        
+            
+                <div class="post-nav">
+                    
+                        <a class="previous" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2019-10-02-functor-composition&#x2F;">‹ Functor Composition</a>
+                    
+                    
+                        <a class="next" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2020-04-22-redis-connection-pool-in-rails&#x2F;">Redis connection pool in Rails ›</a>
+                    
+                    
+                    
+                </div>
+            
+
+        
+
+    </div>
+
+    
+    
+</article>
+
+
+                </div>
+            </main>
+
+            
+            
+        </div>
+
+      
+          <script type="text/javascript" src="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;even.js" ></script>
+      
+    </body>
+
+</html>

@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+	<title>Tejas&#x27; Blog</title>
+	<subtitle>Thoughts and learnings on writing better software</subtitle>
+	<link href="https://tejasbubane.github.io/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://tejasbubane.github.io"/>
+	<generator uri="https://www.getzola.org/">Zola</generator>
+	<updated>2021-02-22T00:00:00+00:00</updated>
+	<id>https://tejasbubane.github.io/atom.xml</id>
+	<entry xml:lang="en">
+		<title>Currying Reducers</title>
+		<published>2021-02-22T00:00:00+00:00</published>
+		<updated>2021-02-22T00:00:00+00:00</updated>
+		<link href="https://tejasbubane.github.io/posts/2021-02-22-currying-reducers/" type="text/html"/>
+		<id>https://tejasbubane.github.io/posts/2021-02-22-currying-reducers/</id>
+		<content type="html">&lt;p&gt;Yesterday I was reading &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.coursera.org&#x2F;lecture&#x2F;progfun1&#x2F;lecture-2-2-currying-fOuQ9&quot;&gt;curried (partial) functions in Scala&lt;&#x2F;a&gt; and I remembered the first time I used them in an actual production application.&lt;&#x2F;p&gt;
+&lt;span id=&quot;continue-reading&quot;&gt;&lt;&#x2F;span&gt;
+&lt;p&gt;This was with a &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;reactjs.org&#x2F;&quot;&gt;ReactJS&lt;&#x2F;a&gt; &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Single-page_application&quot;&gt;SPA&lt;&#x2F;a&gt; which used &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redux.js.org&#x2F;&quot;&gt;Redux&lt;&#x2F;a&gt; for managing state.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Note:&lt;&#x2F;strong&gt; This blogpost assumes that the reader has basic understanding of &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redux.js.org&#x2F;&quot;&gt;Redux&lt;&#x2F;a&gt; - namely &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redux.js.org&#x2F;tutorials&#x2F;fundamentals&#x2F;part-3-state-actions-reducers#writing-reducers&quot;&gt;defining&lt;&#x2F;a&gt; and &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redux.js.org&#x2F;tutorials&#x2F;fundamentals&#x2F;part-3-state-actions-reducers#combining-reducers&quot;&gt;combining&lt;&#x2F;a&gt; reducers.&lt;&#x2F;p&gt;
+&lt;p&gt;The application I worked on was fetching data from backend APIs with paginated results and uniform response structure.&lt;&#x2F;p&gt;
+&lt;p&gt;For example:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;GET &#x2F;products
+
+{
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: [
+    {&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;Foo&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;13&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;},
+    {&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;Bar&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;age&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;16&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;},
+    &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ec9489;color:#657b83;&quot;&gt;...&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;
+  ],
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;total_count&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;108&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;total_pages&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;11
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;For which I wrote a reducer:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; productsReducer.js
+
+&#x2F;&#x2F; status of data fetch - to show loaders on page
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;status &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;null&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; based on action.type return either of &amp;quot;in-progress&amp;quot;, &amp;quot;success&amp;quot;, &amp;quot;failure&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;}
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;items &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;[]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;switch &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) {
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;FETCH_PRODUCTS_SUCCESS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;;
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;FETCH_PRODUCTS_FAILURE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;[]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; clear existing data in store
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;default&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;;
+  }
+}
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;totalCount &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; same as `items` - return action.total_count if success
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;}
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;totalPages &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; same as `items` - return action.total_pages if success
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;}
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;export default &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;combineReducers&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;({
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;totalCount&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;totalPages
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;});
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But this was just for one API. There were a few more:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-json&quot; data-lang=&quot;json&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;GET &#x2F;orders
+{
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: [
+    &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ec9489;color:#657b83;&quot;&gt;...&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;
+  ],
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;total_count&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ec9489;color:#657b83;&quot;&gt;..&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;total_pages&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;background-color:#ec9489;color:#657b83;&quot;&gt;..&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;GET &#x2F;warehouse_locations
+&#x2F;&#x2F; and so on...
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As I wrote the second reducer for &lt;code&gt;orders&lt;&#x2F;code&gt;, I realized there was clearly a pattern here - a pattern that mirrored the backend API structure. But how do we harness this to create a good abstraction?&lt;&#x2F;p&gt;
+&lt;p&gt;If we could pass another argument to the reducer functions - say &lt;code&gt;type&lt;&#x2F;code&gt; which is &lt;code&gt;&amp;quot;products&amp;quot;&lt;&#x2F;code&gt;, &lt;code&gt;&amp;quot;orders&amp;quot;&lt;&#x2F;code&gt;, etc. -
+that would help us define different &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redux.js.org&#x2F;tutorials&#x2F;fundamentals&#x2F;part-3-state-actions-reducers#designing-actions&quot;&gt;action-types&lt;&#x2F;a&gt; for each API.
+But the problem is those reducers are invoked by &lt;code&gt;redux&lt;&#x2F;code&gt; library.
+Javascript being &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Dynamic_programming_language&quot;&gt;dynamically typed&lt;&#x2F;a&gt; will happily allow us to add a third parameter,
+but its value would end up being &lt;code&gt;undefined&lt;&#x2F;code&gt; always because redux will not pass any value there.
+So we cannot just add a third argument to every function. The function we provide to redux
+has to match the function signature:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &amp;lt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;initValue&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;&amp;gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I was studying functional programming back then with
+&lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.coursera.org&#x2F;learn&#x2F;programming-languages&quot;&gt;Dan Grossman&#x27;s fantastic course on Coursera&lt;&#x2F;a&gt; which I highly recommend to any programmer -
+irrespective of the language you work with.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Functional_programming&quot;&gt;Functional programming&lt;&#x2F;a&gt; invariably means &lt;code&gt;functions as first-class citizens&lt;&#x2F;code&gt; i.e. functions are
+just like any other values (integers, strings, etc.). Functions can be passed around as arguments and
+returned as return-values from other functions. And redux being designed in a functional way helps us here.&lt;&#x2F;p&gt;
+&lt;p&gt;✨ Enter &lt;code&gt;currying&lt;&#x2F;code&gt; ✨&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Currying&quot;&gt;Currying&lt;&#x2F;a&gt; is a technique which splits one function that takes multiple arguments into multiple functions
+each taking one or more arguments.&lt;&#x2F;p&gt;
+&lt;p&gt;In our case, we can create a higher-order function that takes the &lt;code&gt;listType&lt;&#x2F;code&gt; argument, then builds and returns another function which matches the signature that redux expects.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; listReducer.js
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;listReducer &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;listType =&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const type &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;listType&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;toUpperCase&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;();
+
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;items &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;[]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;switch &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) {
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;`&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;FETCH_${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;}_SUCCESS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;`&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;action&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;;
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;case &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;`&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;FETCH_${&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;}_FAILURE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;`&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;[]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;;
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;default&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;state&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;;
+    }
+  }
+
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; stripping other functions for brevity
+
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;combineReducers&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;({
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;items&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;totalCount&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;totalPages
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;})
+}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;See full code in &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;gist.github.com&#x2F;tejasbubane&#x2F;aa7477ca98c4c667a49d3eaf692dc717&quot;&gt;this gist&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Here&#x27;s how we now use our &lt;code&gt;listReducer&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-js&quot; data-lang=&quot;js&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;&#x2F;&#x2F; index.js - top-level reducer
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;const rootReducer &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;combineReducers&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;({
+  products: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;listReducer&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;products&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;),
+  orders: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;listReducer&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;orders&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;),
+  warehouse_locations: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;listReducer&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;warehouse_locations&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;),
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;...
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;})
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;These type of reducers are also sometimes called &lt;code&gt;higher-order reducers&lt;&#x2F;code&gt; -
+because they are &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Higher-order_function&quot;&gt;higher-order functions&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;If you found this interesting, also check out &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;reactjs.org&#x2F;docs&#x2F;higher-order-components.html&quot;&gt;higher order components&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Refactoring Filters</title>
+		<published>2021-01-17T00:00:00+00:00</published>
+		<updated>2021-01-17T00:00:00+00:00</updated>
+		<link href="https://tejasbubane.github.io/posts/2021-01-17-refactoring-filters/" type="text/html"/>
+		<id>https://tejasbubane.github.io/posts/2021-01-17-refactoring-filters/</id>
+		<content type="html">&lt;p&gt;Recently I was working on refactoring some unwieldy code for filtering data. Here&#x27;s a short story of how it went 🙂.&lt;&#x2F;p&gt;
+&lt;span id=&quot;continue-reading&quot;&gt;&lt;&#x2F;span&gt;
+&lt;p&gt;The code I was refactoring was large, but one repetition particularly stood out:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# app&#x2F;models&#x2F;user.rb
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d33682;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;filter&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;filters&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; filters[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;].present?
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;User&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.where(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;status:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; filters[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+  if&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; filters[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:location_id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;].present?
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;User&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.where(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;location_id:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; filters[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:location_id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;])
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# and so on...
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The UI had a large set of filters for filtering through a list - which is what this code does - filters through records from database.&lt;&#x2F;p&gt;
+&lt;p&gt;My first thoughts were:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Why is this code so verbose?&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Why do we need those &lt;code&gt;if&lt;&#x2F;code&gt; conditions? Without them, we can just chain those &lt;code&gt;where&lt;&#x2F;code&gt; clauses and this code would read so much better!&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Let us try removing the conditions. Ohh wait, this code does not have tests! 😱&lt;&#x2F;p&gt;
+&lt;p&gt;Time to flex &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;rspec.info&#x2F;&quot;&gt;rspec&lt;&#x2F;a&gt; muscles 💪. &lt;strong&gt;Yeah TDD!&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# spec&#x2F;models&#x2F;user_spec.rb
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;it &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;filters users by status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Create some users - Arrange
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  filtered_users = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;User&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.filter(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;pending&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;).pluck(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Act
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  expect(filtered_users).to match_array(users.map(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Assert
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Run tests - passes ✅&lt;&#x2F;p&gt;
+&lt;p&gt;Remove &amp;quot;if&amp;quot; - passes ✅ As expected.&lt;&#x2F;p&gt;
+&lt;p&gt;Now for the real test.. We naturally expect all records to be returned if no filter is applied.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# spec&#x2F;models&#x2F;user_spec.rb
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;it &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;returns all users if no status filter applied&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Create some users - Arrange
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  filtered_users = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;User&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.filter(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;nil&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;).pluck(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Act
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  expect(filtered_users).to match_array(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;User&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.pluck(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Assert
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Run tests - passes ✅&lt;&#x2F;p&gt;
+&lt;p&gt;Remove &amp;quot;if&amp;quot; - &lt;code&gt;fails&lt;&#x2F;code&gt; ❌ There you go. That is why we need the condition.&lt;&#x2F;p&gt;
+&lt;p&gt;To see what exactly is causing this: &lt;em&gt;** Hops into REPL **&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;irb&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(main)&amp;gt; User.count
+=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;10
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;irb&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(main)&amp;gt; User.where(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;status: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;pending&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;).count
+   (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;1.0ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)  SELECT COUNT(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;FROM &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;users&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; WHERE &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;users&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;$&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;1  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;pending&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]
+=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;4
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;irb&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(main)&amp;gt; User.where(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;status:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; nil).count
+   (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;0.9ms&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)  SELECT COUNT(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;FROM &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;users&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; WHERE &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;users&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; IS NULL
+=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;0
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Fair enough. &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;guides.rubyonrails.org&#x2F;active_record_querying.html&quot;&gt;ActiveRecord&lt;&#x2F;a&gt; gets &lt;code&gt;nil&lt;&#x2F;code&gt;, it filters by &lt;code&gt;NULL&lt;&#x2F;code&gt;. Let us see if we can find a way to somehow still chain those methods.&lt;&#x2F;p&gt;
+&lt;p&gt;ActiveRecord expects a &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;api.rubyonrails.org&#x2F;v6.1.0&#x2F;classes&#x2F;ActiveRecord&#x2F;Relation.html&quot;&gt;Relation object&lt;&#x2F;a&gt; for chaining to work. Try creating a generic method:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# app&#x2F;models&#x2F;user.rb
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;where_if&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;filters&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;attribute&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:)
+  data = filters[attribute]
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; all &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;unless&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; data
+
+  where(attribute =&amp;gt; data)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The secret sauce here is &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;apidock.com&#x2F;rails&#x2F;v6.0.0&#x2F;ActiveRecord&#x2F;Scoping&#x2F;Named&#x2F;ClassMethods&#x2F;all&quot;&gt;ActiveRecord&#x27;s all method&lt;&#x2F;a&gt; which returns &lt;code&gt;scope&lt;&#x2F;code&gt; (Relation) object of all queries applied until this point. And we know that if we have a &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;api.rubyonrails.org&#x2F;v6.1.0&#x2F;classes&#x2F;ActiveRecord&#x2F;Relation.html&quot;&gt;Relation&lt;&#x2F;a&gt; object, we can chain methods.&lt;&#x2F;p&gt;
+&lt;p&gt;Refactoring &lt;code&gt;User.filter&lt;&#x2F;code&gt; method:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# app&#x2F;models&#x2F;user.rb
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#d33682;&quot;&gt;self&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;filter&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;filters&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+  where_if(filters, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:status&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+    .where_if(filters, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:location_id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+    .where_if(filters, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:is_active&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+    .where_if(filters, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:locale&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# and some more...
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Much better! 🎉&lt;&#x2F;p&gt;
+&lt;p&gt;Taking it a step further, the application had few more listing pages which means other models with similar &lt;code&gt;.filter&lt;&#x2F;code&gt; method. Our &lt;code&gt;.where_if&lt;&#x2F;code&gt; method is generic enough to be used by all of them.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# app&#x2F;models&#x2F;concerns&#x2F;filterable.rb
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;module &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;Filterable
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;where_if&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;filters&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;attribute&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;:, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;parameter&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;nil&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+    data = parameter &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;?&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; filters[parameter] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; filters[attribute]
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; all &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;unless&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; data
+
+    where(attribute =&amp;gt; data)
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And now we can &lt;code&gt;include Filterable&lt;&#x2F;code&gt; in all those models having filter. I also went ahead and separated &lt;code&gt;attribute&lt;&#x2F;code&gt; and &lt;code&gt;parameter&lt;&#x2F;code&gt; which helps in cases where parameter name from frontend does not match the database attribute name in backend.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Redis connection pool in Rails</title>
+		<published>2020-04-22T00:00:00+00:00</published>
+		<updated>2020-04-22T00:00:00+00:00</updated>
+		<link href="https://tejasbubane.github.io/posts/2020-04-22-redis-connection-pool-in-rails/" type="text/html"/>
+		<id>https://tejasbubane.github.io/posts/2020-04-22-redis-connection-pool-in-rails/</id>
+		<content type="html">&lt;p&gt;Rails is multi-threaded, but can your redis connection handle it?&lt;&#x2F;p&gt;
+&lt;span id=&quot;continue-reading&quot;&gt;&lt;&#x2F;span&gt;
+&lt;p&gt;&lt;strong&gt;TLDR:&lt;&#x2F;strong&gt; Use &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;mperham&#x2F;connection_pool&quot;&gt;connection_pool&lt;&#x2F;a&gt; gem.&lt;&#x2F;p&gt;
+&lt;p&gt;Activerecord - rails&#x27; database access library - &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;api.rubyonrails.org&#x2F;v6.0.2&#x2F;classes&#x2F;ActiveRecord&#x2F;ConnectionAdapters&#x2F;ConnectionPool.html&quot;&gt;comes with inbuilt connection pool&lt;&#x2F;a&gt;. We can change the pool size via &lt;code&gt;config&#x2F;database.yml&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-yml&quot; data-lang=&quot;yml&quot;&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;production
+  adapter&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;postgresql
+  pool&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;20
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We use &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redis.io&#x2F;&quot;&gt;redis&lt;&#x2F;a&gt; for variety of purposes like caching, queuing, pubsub, etc. But when it comes to connecting to redis, we don&#x27;t have any inbuilt connection pool.
+So generally we end up using just one direct connection, mostly via a configuration or application-level global variable.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# config&#x2F;initializers&#x2F;redis.rb
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;REDIS &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Redis&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;host: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;10.0.1.1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;port: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;6380&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;db: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;15&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# accessing data
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;REDIS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.get(&amp;lt;key&amp;gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;REDIS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.set(&amp;lt;key&amp;gt;, &amp;lt;value&amp;gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Thanks to the &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redis.io&#x2F;topics&#x2F;benchmarks&quot;&gt;ludicrous speed of redis&lt;&#x2F;a&gt;, most queries return in milliseconds &amp;amp; we don&#x27;t see any issues even with multiple parallel connections.
+But note that this is a shared blocking resource. &lt;code&gt;Shared&lt;&#x2F;code&gt; because we have just one connection across multiple application threads &amp;amp; &lt;code&gt;blocking&lt;&#x2F;code&gt; because
+on a single connection &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;redis.io&#x2F;topics&#x2F;pipelining&quot;&gt;redis will block the next query until the previous one returns&lt;&#x2F;a&gt;. Which means that this can have cascading effects.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;problem&quot;&gt;Problem&lt;&#x2F;h2&gt;
+&lt;p&gt;Let&#x27;s do some benchmarking with that single connection:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#859900;&quot;&gt;require &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;benchmark&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;#39;
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# simulate blocking shared resource
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;REDIS &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Mutex&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# blocks for 10 milliseconds
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;incr = -&amp;gt; { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;sleep&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;0.010&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) }
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Benchmark&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.bm &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;x&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;|
+  x.report(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;single&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) { incr.call } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# returns in 10 milliseconds
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  threads = []
+  x.report(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;multi-threaded&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;100&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.times &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;      threads &amp;lt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;REDIS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.synchronize { incr.call }
+      }
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# join to depict how much time the last waiting thread takes
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    threads.each { |&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;thr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;| thr.join }
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And we are in for a surprise!&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;user&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;     system      total        real
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;single&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  0.000055   0.000018   0.000073 (  0.012773)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;multi-threaded&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  0.014485   0.023569   0.038054 (  1.197625)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;With 100 parallel queries, our result times jumped from 10ms to 1 second.
+This is cascading effect and the load time of 1 second for redis is just plain bad.&lt;&#x2F;p&gt;
+&lt;p&gt;Of-course this is hypothetical, but note that I have considered RTT (round-trip time) for request 10ms
+considering local connection. For remote connections over HTTP, these can go up to 250-300ms for a single query.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;solution&quot;&gt;Solution&lt;&#x2F;h2&gt;
+&lt;p&gt;Use &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;mperham&#x2F;connection_pool&quot;&gt;connection_pool&lt;&#x2F;a&gt; gem. It comes from the creator of &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;sidekiq.org&#x2F;&quot;&gt;sidekiq&lt;&#x2F;a&gt; and is pretty easy to use:&lt;&#x2F;p&gt;
+&lt;p&gt;With rails we need something like this:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# config&#x2F;initializers&#x2F;redis.rb
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;pool_size = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;20
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;REDIS &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;ConnectionPool&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;size:&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; pool_size) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+  Redis&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;host: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;&amp;lt;host&amp;gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;port: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;&amp;lt;port&amp;gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# accessing data
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;REDIS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.with &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;conn&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;|
+  conn.get(&amp;lt;key&amp;gt;)
+  conn.set(&amp;lt;key&amp;gt;, &amp;lt;value&amp;gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here&#x27;s how this code (and connection pools in general) work:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;.with&lt;&#x2F;code&gt; will pick a connection from the pool. A new connection is created if no free connection is available.
+This connection is passed to the block &amp;amp; returned back to the pool upon completion.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;pool_size&lt;&#x2F;code&gt; is the max number of connections that will be established at any point of time.
+Threads calling &lt;code&gt;.with&lt;&#x2F;code&gt; will have to wait for free connection if this limit is reached.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;It seems reasonable to keep &lt;code&gt;pool_size&lt;&#x2F;code&gt; equal to max number of threads of our application server.&lt;&#x2F;p&gt;
+&lt;p&gt;Let&#x27;s check benchmarks with &lt;code&gt;connection_pool&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#859900;&quot;&gt;require &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;benchmark&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;#39;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;require &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;#39;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;connection_pool&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;#39;
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# simulate blocking shared resource - but now with a pool of them
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;REDIS &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;ConnectionPool&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;size: &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;100&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+  Mutex&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new
+end
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# blocks for 10 milliseconds
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;incr = -&amp;gt; { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;sleep&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;0.010&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) }
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Benchmark&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.bm &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;x&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;|
+  x.report(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;single&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) { incr.call } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# returns in 10 milliseconds
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  threads = []
+  x.report(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;multi-threaded&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;100&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.times &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;      threads &amp;lt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;REDIS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.with { |&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;conn&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;|
+          conn.synchronize { incr.call }
+        }
+      }
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# join to depict how much time the last waiting thread takes
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    threads.each { |&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;thr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;| thr.join }
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And here are the results:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;user&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;     system      total        real
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;single&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  0.000048   0.000040   0.000088 (  0.010704)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;multi-threaded&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  0.005984   0.006500   0.012484 (  0.017754)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Much better!&lt;&#x2F;p&gt;
+&lt;p&gt;And this is why &lt;code&gt;activerecord&lt;&#x2F;code&gt; also comes with a default connection pool.&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Unit testing rack middleware</title>
+		<published>2019-11-12T00:00:00+00:00</published>
+		<updated>2019-11-12T00:00:00+00:00</updated>
+		<link href="https://tejasbubane.github.io/posts/2019-11-12-unit-testing-rack-middleware/" type="text/html"/>
+		<id>https://tejasbubane.github.io/posts/2019-11-12-unit-testing-rack-middleware/</id>
+		<content type="html">&lt;p&gt;Underneath (almost) all Ruby web application lies the &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;http:&#x2F;&#x2F;rack.github.io&#x2F;&quot;&gt;Rack&lt;&#x2F;a&gt; architecture.
+With minimal interface, it is simple to write a middleware. Let&#x27;s see how to test it.&lt;&#x2F;p&gt;
+&lt;span id=&quot;continue-reading&quot;&gt;&lt;&#x2F;span&gt;
+&lt;p&gt;A middleware is anything which responds to &lt;code&gt;call&lt;&#x2F;code&gt; method (&lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Duck_typing&quot;&gt;duck-typing&lt;&#x2F;a&gt;).&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Aside:&lt;&#x2F;strong&gt; Lambdas and procs in Ruby can be executed with &lt;code&gt;.call&lt;&#x2F;code&gt; so they can be middlewares as well.&lt;&#x2F;p&gt;
+&lt;p&gt;Our example middleware allows requests to pass through only if the required headers are present:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;class BlockActions
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;initialize&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;@&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;app &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;= app
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+
+  def &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;call&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;env&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;unless&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; env[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;HTTP_X_CLIENT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] == &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;mobile&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;&amp;amp;&amp;amp;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; env[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;HTTP_X_MOBILE_USER_ID&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;[
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;400&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# status
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;Content-Type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;=&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;application&#x2F;json&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;}, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# headers
+        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;Invalid Request&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# response body
+      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]
+    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+    @&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;app&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.call(env)
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now in order to test this, we have to write &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;guides.rubyonrails.org&#x2F;testing.html#integration-testing&quot;&gt;integration tests&lt;&#x2F;a&gt;
+which is fine, but they are slow. Especially if you want to
+benchmark the middleware to see if it is not doing some nasty thing in some edgecase that bumps up your response times.&lt;&#x2F;p&gt;
+&lt;p&gt;As described before, rack middleware is a simple class with call method. Let&#x27;s test it in isolation:&lt;&#x2F;p&gt;
+&lt;p&gt;We need 2 things: the middleware instance &amp;amp; env to be passed in. Middleware instance is simple class instance, but to create env,
+we will use &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.rubydoc.info&#x2F;gems&#x2F;rack&#x2F;Rack&#x2F;MockRequest&quot;&gt;MockRequest&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Rack&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;MockRequest&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.env_for(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;&#x2F;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;method: :get&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Our middleware does not care about routes so it might as well be:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Rack&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;MockRequest&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.env_for
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Putting it into specs:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;describe &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;BlockActions &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Mock env to pass in middleware
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  let(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:env&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;Rack&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;MockRequest&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.env_for }
+
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# dummy app to validate success
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  let(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:app&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) { -&amp;gt;(env) { [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;200&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, {}, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;success&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] } }
+
+  subject { &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;BlockActions&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;new&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(app) }
+
+  it &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;allows if client &amp;amp; user-id headers are present&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    env[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;HTTP_X_CLIENT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;mobile&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    env[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;HTTP_X_MOBILE_USER_ID&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    status, _headers, _response = subject.call(env)
+    expect(status).to eq(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;200&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  it &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;does not allow if client is missing&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    env[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;HTTP_X_MOBILE_USER_ID&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    status, _headers, _response = subject.call(env)
+    expect(status).to eq(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;400&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  it &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;does not allow if mobile-user-id is missing&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    env[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;HTTP_X_CLIENT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;mobile&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    status, _headers, _response = subject.call(env)
+    expect(status).to eq(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;400&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  it &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;does not allow if client is not mobile&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;do
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    env[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;HTTP_X_CLIENT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] = &lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;jared&lt;&#x2F;span&gt;&lt;span style=&quot;color:#839496;&quot;&gt;&amp;quot;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    status, _headers, _response = subject.call(env)
+    expect(status).to eq(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;400&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Because these are unit tests they run pretty fast:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;Finished in 0.03861 seconds (files took 0.09118 seconds to load)
+4 examples, 0 failures
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This approach allows us to test all cases &amp;amp; also &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;blog.heroku.com&#x2F;benchmarking-rack-middleware&quot;&gt;benchmark the middleware&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;em&gt;All code from this blog can be found in &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;gist.github.com&#x2F;tejasbubane&#x2F;c046640bfb1964e2678aaa138ca8e4bb&quot;&gt;this executable script&lt;&#x2F;a&gt;.&lt;&#x2F;em&gt;&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Functor Composition</title>
+		<published>2019-10-02T00:00:00+00:00</published>
+		<updated>2019-10-02T00:00:00+00:00</updated>
+		<link href="https://tejasbubane.github.io/posts/2019-10-02-functor-composition/" type="text/html"/>
+		<id>https://tejasbubane.github.io/posts/2019-10-02-functor-composition/</id>
+		<content type="html">&lt;p&gt;Composition is the beauty of functional programming &amp;amp; haskell with it&#x27;s typeclasses excels at this.
+Let&#x27;s see what &lt;code&gt;Functors&lt;&#x2F;code&gt; are and how they compose.&lt;&#x2F;p&gt;
+&lt;span id=&quot;continue-reading&quot;&gt;&lt;&#x2F;span&gt;
+&lt;p&gt;Almost all languages have a way to apply function on all elements of a data structure.&lt;&#x2F;p&gt;
+&lt;p&gt;eg. Map in &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;ruby-doc.org&#x2F;core-2.6.4&#x2F;Array.html#method-i-map&quot;&gt;ruby&lt;&#x2F;a&gt; &amp;amp;
+&lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Web&#x2F;JavaScript&#x2F;Reference&#x2F;Global_Objects&#x2F;Array&#x2F;map&quot;&gt;javascript&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Haskell goes beyond just mapping over array-like objects &amp;amp; allows defining an abstract
+method for multiple structures.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;functors&quot;&gt;Functors&lt;&#x2F;h2&gt;
+&lt;p&gt;If we consider the example of a &lt;code&gt;Maybe&lt;&#x2F;code&gt; data-type (which &lt;code&gt;may&lt;&#x2F;code&gt; hold a value), a common
+use-case is to apply function to inner value if it is present:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;x &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Just &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;fmap (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) x &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- # =&amp;gt; Just 2
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;y &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Nothing
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;fmap (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) y &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- # =&amp;gt; Nothing
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;One can think of structures as boxes. &lt;code&gt;fmap&lt;&#x2F;code&gt; applies function to element inside that box, wraps it in the &lt;code&gt;same box&lt;&#x2F;code&gt; and returns it. &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;http:&#x2F;&#x2F;adit.io&#x2F;posts&#x2F;2013-04-17-functors,_applicatives,_and_monads_in_pictures.html&quot;&gt;link&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;fmap&lt;&#x2F;code&gt; is a function of &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;wiki.haskell.org&#x2F;Functor&quot;&gt;&lt;code&gt;Functor&lt;&#x2F;code&gt; typeclass&lt;&#x2F;a&gt; &amp;amp; structures like List &amp;amp; Maybe implement Functor typeclass:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#859900;&quot;&gt;class Functor &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;where
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;fmap &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f b &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- f is abstract structure here
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Well-defined functors are structure-preserving - ie. they don&#x27;t modify the structure.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;fmap (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- # =&amp;gt; [3,4,5]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;h2 id=&quot;composing-functors&quot;&gt;Composing Functors&lt;&#x2F;h2&gt;
+&lt;p&gt;Now suppose we want to apply function to nested lists&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;fmap (fmap (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)) [[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;],[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- # =&amp;gt; [[2,3,4],[5,6]]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Can we compose these two &lt;code&gt;fmaps&lt;&#x2F;code&gt;?&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;fmap1 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f1 a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f1 b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;fmap2 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;x &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;y&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f2 x &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f2 y&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In haskell, all functions are &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;Currying&quot;&gt;curried&lt;&#x2F;a&gt; - which means &lt;code&gt;fmap1&lt;&#x2F;code&gt; when supplied with
+one argument (&lt;code&gt;a -&amp;gt; b&lt;&#x2F;code&gt;) returns another function which takes &lt;code&gt;f1 a&lt;&#x2F;code&gt; and returns &lt;code&gt;f1 b&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Substitute &lt;code&gt;x -&amp;gt; y&lt;&#x2F;code&gt; with &lt;code&gt;f1 a -&amp;gt; f1 b&lt;&#x2F;code&gt;: (replace &lt;code&gt;x&lt;&#x2F;code&gt; with &lt;code&gt;f1 a&lt;&#x2F;code&gt; &amp;amp; &lt;code&gt;y&lt;&#x2F;code&gt; with &lt;code&gt;f1 b&lt;&#x2F;code&gt;)&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;fmap2 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f1 a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f1 b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f1 a&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;f1 b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;))
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;See &lt;code&gt;f2 (f1 a)&lt;&#x2F;code&gt; there? Nested structure! We just got &lt;code&gt;fmap&lt;&#x2F;code&gt; for a nested structure!&lt;&#x2F;p&gt;
+&lt;p&gt;We took the output of &lt;code&gt;fmap1&lt;&#x2F;code&gt; - &lt;code&gt;(f1 a -&amp;gt; f1 b)&lt;&#x2F;code&gt; and passed it as first argument to &lt;code&gt;fmap2&lt;&#x2F;code&gt;. Which is nothing but function composition:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;(.) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;b &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;c&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;b&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;c
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Output of function &lt;code&gt;a -&amp;gt; b&lt;&#x2F;code&gt; (b) is passed to &lt;code&gt;b -&amp;gt; c&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Above example becomes:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(fmap2 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; fmap1) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; b) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (f2 (f1 a) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; f2 (f1 b))
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Cleaning it up a bit &amp;amp; adding typeclass constraints:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(fmap &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; fmap) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;::&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Functor&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; f1, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Functor&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; f2) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;=&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; (a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; b) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; f1 (f2 a) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; f1 (f2 b)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Note the entire structure &lt;code&gt;f1 (f2)&lt;&#x2F;code&gt; is preserved in the output - only &lt;code&gt;a&lt;&#x2F;code&gt;s are transformed to &lt;code&gt;b&lt;&#x2F;code&gt;s.&lt;&#x2F;p&gt;
+&lt;p&gt;Now we can do this:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(fmap &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; fmap) (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) [[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;],[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- # =&amp;gt; [[2,3,4],[5,6]]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We jumped inside two lists &amp;amp; applied the function &lt;code&gt;(+1)&lt;&#x2F;code&gt;. But note those two structures(functors) need not be lists or rather need not even be of the same type.
+They can be different (&lt;code&gt;f1&lt;&#x2F;code&gt; &amp;amp; &lt;code&gt;f2&lt;&#x2F;code&gt; in above definition), although both must have instances of Functor.&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(fmap &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; fmap) (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Just &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Nothing&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Just &lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- # =&amp;gt; [Just 2, Nothing, Just 3]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;But why limit to just two?&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-haskell&quot; data-lang=&quot;haskell&quot;&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;(fmap &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; fmap &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; fmap) (&lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;) [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Just&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;], &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Nothing&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#cb4b16;&quot;&gt;Just&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt; [&lt;&#x2F;span&gt;&lt;span style=&quot;color:#6c71c4;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;]]
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;-- # =&amp;gt; [Just [2],Nothing,Just [3]]
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Being pure &amp;amp; structure preserving allows Functors to compose in such a neat way. Just beautiful!&lt;&#x2F;p&gt;
+</content>
+	</entry>
+	<entry xml:lang="en">
+		<title>Serializers Everywhere</title>
+		<published>2019-01-21T00:00:00+00:00</published>
+		<updated>2019-01-21T00:00:00+00:00</updated>
+		<link href="https://tejasbubane.github.io/posts/2019-01-21-serializers-everywhere/" type="text/html"/>
+		<id>https://tejasbubane.github.io/posts/2019-01-21-serializers-everywhere/</id>
+		<content type="html">&lt;p&gt;Manage multiple versions of &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;rails-api&#x2F;active_model_serializers&quot;&gt;JSON serializers&lt;&#x2F;a&gt; in a &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;rubyonrails.org&#x2F;&quot;&gt;Rails&lt;&#x2F;a&gt; application with ease.&lt;&#x2F;p&gt;
+&lt;span id=&quot;continue-reading&quot;&gt;&lt;&#x2F;span&gt;
+&lt;p&gt;&lt;strong&gt;Aside:&lt;&#x2F;strong&gt; Even though Rails has an &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;api.rubyonrails.org&#x2F;classes&#x2F;ActiveModel&#x2F;Serializers&#x2F;JSON.html#method-i-as_json&quot;&gt;inbuilt mechanism&lt;&#x2F;a&gt;
+to serialize domain objects,
+&lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;rails-api&#x2F;active_model_serializers&quot;&gt;ActiveModel Serializers&lt;&#x2F;a&gt; (AMS) is a
+popular library for decoupling the serialization logic from database layer. This post assumes usage of AMS.&lt;&#x2F;p&gt;
+&lt;p&gt;Change is the only constant in software development and it is the view or presentation layer
+that changes the most. In case of API-only apps, JSON schema is the view.&lt;&#x2F;p&gt;
+&lt;p&gt;Assume we have resources like &lt;code&gt;product&lt;&#x2F;code&gt; and &lt;code&gt;inventory&lt;&#x2F;code&gt; with corresponding serializers.&lt;&#x2F;p&gt;
+&lt;p&gt;Now product info is also required in inventory details.
+Using &lt;a rel=&quot;noopener&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;rails-api&#x2F;active_model_serializers&#x2F;blob&#x2F;v0.10.6&#x2F;docs&#x2F;general&#x2F;serializers.md#associations&quot;&gt;&lt;code&gt;belongs_to&lt;&#x2F;code&gt; association&lt;&#x2F;a&gt;
+would pick the main product serializer which would render the entire product details which we don&#x27;t need.
+So we create another serializer &lt;code&gt;InventoryProductSerializer&lt;&#x2F;code&gt; because adding some method with hand-rolled json is not a good practice - which is exactly why we use serializers in the first place.&lt;&#x2F;p&gt;
+&lt;p&gt;Then we also have &lt;code&gt;delivery_order&lt;&#x2F;code&gt; - which also needs product info but with slightly different fields.
+We think of saving those precious bytes on the network by sending only required fields and not single more. So we religiously create &lt;code&gt;DeliveryOrderProductSerializer&lt;&#x2F;code&gt;.
+This goes on and on...&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;product_serializer.rb
+inventory_product_serializer.rb
+delivery_order_product_serializer.rb
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Lets take a moment and see if we can reduce this. Ideally &lt;code&gt;inventory-product&lt;&#x2F;code&gt; serializer will be used &lt;code&gt;**only**&lt;&#x2F;code&gt; by &lt;code&gt;inventory&lt;&#x2F;code&gt; serializer.
+So why not somehow put it inside &lt;code&gt;InventorySerializer&lt;&#x2F;code&gt; where it belongs?&lt;&#x2F;p&gt;
+&lt;p&gt;We can conveniently take advantage of Ruby&#x27;s &lt;code&gt;constant lookup algorithm&lt;&#x2F;code&gt; to do this:&lt;&#x2F;p&gt;
+&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;class InventorySerializer &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;ActiveModel&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;::Serializer
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  attributes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:location&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:quantity
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  has_one &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:product
+
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Return only required attributes here to keep API small
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;class ProductSerializer &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;ActiveModel&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;::Serializer
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    attributes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:price
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;&lt;pre style=&quot;background-color:#fdf6e3;&quot;&gt;
+&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;class DeliveryOrderSerializer &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;ActiveModel&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;::Serializer
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  attributes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:quantity&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:price&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:source&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:destination
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;  has_one &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:product
+
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#93a1a1;&quot;&gt;# Return only required attributes here to keep API small
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#b58900;&quot;&gt;class ProductSerializer &lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;ActiveModel&lt;&#x2F;span&gt;&lt;span style=&quot;color:#268bd2;&quot;&gt;::Serializer
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;    attributes &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:id&lt;&#x2F;span&gt;&lt;span style=&quot;color:#657b83;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#2aa198;&quot;&gt;:name
+  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#859900;&quot;&gt;end
+end
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;While looking up for any constant (here the class constant &lt;code&gt;ProductSerializer&lt;&#x2F;code&gt;), it is first looked up inside the serializer class itself.
+We have one there and which gets used. The next lookup of outer global &lt;code&gt;ProductSerializer&lt;&#x2F;code&gt; in &lt;code&gt;product_serializer.rb&lt;&#x2F;code&gt; never happens in this case.&lt;&#x2F;p&gt;
+&lt;p&gt;Thus we have achieved colocated concerns. Hope this helps.&lt;&#x2F;p&gt;
+&lt;p&gt;Happy hacking!&lt;&#x2F;p&gt;
+</content>
+	</entry>
+</feed>

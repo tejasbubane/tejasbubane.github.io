@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-152407711-1"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'UA-152407711-1');
+        </script>
+      
+
+      <meta name="description" content="Thoughts and learnings on writing better software">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>Tejas&#x27; Blog - Currying Reducers</title>
+
+      
+        <link rel="alternate" type="application/atom+xml" title="RSS" href="https://tejasbubane.github.io/atom.xml">
+      
+
+      
+          <script defer src="https://cdnjs.cloudflare.com/ajax/libs/slideout/1.0.1/slideout.min.js"></script>
+          
+      
+
+      
+          <link rel="stylesheet" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;site.css">
+          
+      
+
+      <link rel="preconnect" href="https://fonts.gstatic.com">
+      <!--  Main font = Inter -->
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+      <!-- Monospace Font for Code snippets = Fira Code -->
+      <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+
+      
+      
+    </head>
+
+    <body>
+        <div class="container">
+
+            <div id="mobile-navbar" class="mobile-navbar">
+              <div class="mobile-navbar-icon icon-out">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
+
+            <nav id="mobile-menu" class="mobile-menu slideout-menu slideout-menu-left">
+              <ul class="mobile-menu-list">
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                            Home
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                            Tags
+                        </a>
+                    </li>
+                
+                    <li class="mobile-menu-item">
+                        <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                            Setup
+                        </a>
+                    </li>
+                
+              </ul>
+            </nav>
+
+            <header id="header">
+
+              
+              <div class="site-info">
+                <h1 class="site-name"><a href="https:&#x2F;&#x2F;tejasbubane.github.io">Tejas Bubane</a></h1>
+                <p class="site-description">Ruby | Javascript | Haskell | λ</p>
+              </div>
+
+                <nav class="menu">
+                    <ul>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io">
+                                    Home
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags">
+                                    Tags
+                                </a>
+                            </li>
+                        
+                            <li>
+                                <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;setup">
+                                    Setup
+                                </a>
+                            </li>
+                        
+                    </ul>
+                </nav>
+            </header>
+
+            <main>
+                <div class="content" id="mobile-panel">
+                    
+
+
+
+<article class="post">
+    
+    <header class="post__header">
+        <h1 class="post__title">
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2021-02-22-currying-reducers&#x2F;">Currying Reducers</a>
+        </h1>
+        <div class="post__meta">
+          <span class="post__time">February 22, 2021</span>
+          
+          <span class="post-tags">
+            
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags&#x2F;redux&#x2F;">#redux</a>
+            
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags&#x2F;javascript&#x2F;">#javascript</a>
+            
+            <a href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;tags&#x2F;functional-programming&#x2F;">#functional programming</a>
+            
+          </span>
+          
+        </div>
+    </header>
+
+    <div class="post-content">
+      <p>Yesterday I was reading <a rel="noopener" target="_blank" href="https://www.coursera.org/lecture/progfun1/lecture-2-2-currying-fOuQ9">curried (partial) functions in Scala</a> and I remembered the first time I used them in an actual production application.</p>
+<span id="continue-reading"></span>
+<p>This was with a <a rel="noopener" target="_blank" href="https://reactjs.org/">ReactJS</a> <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Single-page_application">SPA</a> which used <a rel="noopener" target="_blank" href="https://redux.js.org/">Redux</a> for managing state.</p>
+<p><strong>Note:</strong> This blogpost assumes that the reader has basic understanding of <a rel="noopener" target="_blank" href="https://redux.js.org/">Redux</a> - namely <a rel="noopener" target="_blank" href="https://redux.js.org/tutorials/fundamentals/part-3-state-actions-reducers#writing-reducers">defining</a> and <a rel="noopener" target="_blank" href="https://redux.js.org/tutorials/fundamentals/part-3-state-actions-reducers#combining-reducers">combining</a> reducers.</p>
+<p>The application I worked on was fetching data from backend APIs with paginated results and uniform response structure.</p>
+<p>For example:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-json" data-lang="json"><span style="color:#657b83;">GET /products
+
+{
+  </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">items</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: [
+    {</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">name</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">Foo</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">, </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">age</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="color:#6c71c4;">13</span><span style="color:#657b83;">},
+    {</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">name</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">Bar</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">, </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">age</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="color:#6c71c4;">16</span><span style="color:#657b83;">},
+    </span><span style="background-color:#ec9489;color:#657b83;">...</span><span style="color:#657b83;">
+  ],
+  </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">total_count</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="color:#6c71c4;">108</span><span style="color:#657b83;">,
+  </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">total_pages</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="color:#6c71c4;">11
+</span><span style="color:#657b83;">}
+</span></code></pre>
+<p>For which I wrote a reducer:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-js" data-lang="js"><span style="color:#93a1a1;">// productsReducer.js
+
+// status of data fetch - to show loaders on page
+</span><span style="color:#268bd2;">const </span><span style="color:#b58900;">status </span><span style="color:#657b83;">= (</span><span style="color:#268bd2;">state </span><span style="color:#657b83;">= </span><span style="color:#b58900;">null</span><span style="color:#657b83;">, </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">) </span><span style="color:#268bd2;">=&gt; </span><span style="color:#657b83;">{
+  </span><span style="color:#93a1a1;">// based on action.type return either of &quot;in-progress&quot;, &quot;success&quot;, &quot;failure&quot;
+</span><span style="color:#657b83;">}
+
+</span><span style="color:#268bd2;">const </span><span style="color:#b58900;">items </span><span style="color:#657b83;">= (</span><span style="color:#268bd2;">state </span><span style="color:#657b83;">= </span><span style="color:#268bd2;">[]</span><span style="color:#657b83;">, </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">) </span><span style="color:#268bd2;">=&gt; </span><span style="color:#657b83;">{
+  </span><span style="color:#859900;">switch </span><span style="color:#657b83;">(</span><span style="color:#268bd2;">action</span><span style="color:#657b83;">.</span><span style="color:#859900;">type</span><span style="color:#657b83;">) {
+    </span><span style="color:#859900;">case </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">FETCH_PRODUCTS_SUCCESS</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">:
+      </span><span style="color:#859900;">return </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">.</span><span style="color:#268bd2;">items</span><span style="color:#657b83;">;
+    </span><span style="color:#859900;">case </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">FETCH_PRODUCTS_FAILURE</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">:
+      </span><span style="color:#859900;">return </span><span style="color:#268bd2;">[]</span><span style="color:#657b83;">; </span><span style="color:#93a1a1;">// clear existing data in store
+    </span><span style="color:#859900;">default</span><span style="color:#657b83;">:
+      </span><span style="color:#859900;">return </span><span style="color:#268bd2;">state</span><span style="color:#657b83;">;
+  }
+}
+
+</span><span style="color:#268bd2;">const </span><span style="color:#b58900;">totalCount </span><span style="color:#657b83;">= (</span><span style="color:#268bd2;">state </span><span style="color:#657b83;">= </span><span style="color:#6c71c4;">0</span><span style="color:#657b83;">, </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">) </span><span style="color:#268bd2;">=&gt; </span><span style="color:#657b83;">{
+  </span><span style="color:#93a1a1;">// same as `items` - return action.total_count if success
+</span><span style="color:#657b83;">}
+
+</span><span style="color:#268bd2;">const </span><span style="color:#b58900;">totalPages </span><span style="color:#657b83;">= (</span><span style="color:#268bd2;">state </span><span style="color:#657b83;">= </span><span style="color:#6c71c4;">0</span><span style="color:#657b83;">, </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">) </span><span style="color:#268bd2;">=&gt; </span><span style="color:#657b83;">{
+  </span><span style="color:#93a1a1;">// same as `items` - return action.total_pages if success
+</span><span style="color:#657b83;">}
+
+</span><span style="color:#859900;">export default </span><span style="color:#b58900;">combineReducers</span><span style="color:#657b83;">({
+  </span><span style="color:#268bd2;">status</span><span style="color:#657b83;">,
+  </span><span style="color:#268bd2;">items</span><span style="color:#657b83;">,
+  </span><span style="color:#268bd2;">totalCount</span><span style="color:#657b83;">,
+  </span><span style="color:#268bd2;">totalPages
+</span><span style="color:#657b83;">});
+</span></code></pre>
+<p>But this was just for one API. There were a few more:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-json" data-lang="json"><span style="color:#657b83;">GET /orders
+{
+  </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">items</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: [
+    </span><span style="background-color:#ec9489;color:#657b83;">...</span><span style="color:#657b83;">
+  ],
+  </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">total_count</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="background-color:#ec9489;color:#657b83;">..</span><span style="color:#657b83;">
+  </span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">total_pages</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">: </span><span style="background-color:#ec9489;color:#657b83;">..</span><span style="color:#657b83;">
+}
+</span></code></pre><pre style="background-color:#fdf6e3;">
+<code><span style="color:#657b83;">GET /warehouse_locations
+// and so on...
+</span></code></pre>
+<p>As I wrote the second reducer for <code>orders</code>, I realized there was clearly a pattern here - a pattern that mirrored the backend API structure. But how do we harness this to create a good abstraction?</p>
+<p>If we could pass another argument to the reducer functions - say <code>type</code> which is <code>&quot;products&quot;</code>, <code>&quot;orders&quot;</code>, etc. -
+that would help us define different <a rel="noopener" target="_blank" href="https://redux.js.org/tutorials/fundamentals/part-3-state-actions-reducers#designing-actions">action-types</a> for each API.
+But the problem is those reducers are invoked by <code>redux</code> library.
+Javascript being <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Dynamic_programming_language">dynamically typed</a> will happily allow us to add a third parameter,
+but its value would end up being <code>undefined</code> always because redux will not pass any value there.
+So we cannot just add a third argument to every function. The function we provide to redux
+has to match the function signature:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-js" data-lang="js"><span style="color:#657b83;">(</span><span style="color:#268bd2;">state </span><span style="color:#657b83;">= &lt;</span><span style="color:#b58900;">initValue</span><span style="color:#657b83;">&gt;, </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">) </span><span style="color:#268bd2;">=&gt; </span><span style="color:#657b83;">{}
+</span></code></pre>
+<p>I was studying functional programming back then with
+<a rel="noopener" target="_blank" href="https://www.coursera.org/learn/programming-languages">Dan Grossman's fantastic course on Coursera</a> which I highly recommend to any programmer -
+irrespective of the language you work with.</p>
+<p><a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Functional_programming">Functional programming</a> invariably means <code>functions as first-class citizens</code> i.e. functions are
+just like any other values (integers, strings, etc.). Functions can be passed around as arguments and
+returned as return-values from other functions. And redux being designed in a functional way helps us here.</p>
+<p>✨ Enter <code>currying</code> ✨</p>
+<p><a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Currying">Currying</a> is a technique which splits one function that takes multiple arguments into multiple functions
+each taking one or more arguments.</p>
+<p>In our case, we can create a higher-order function that takes the <code>listType</code> argument, then builds and returns another function which matches the signature that redux expects.</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-js" data-lang="js"><span style="color:#93a1a1;">// listReducer.js
+
+</span><span style="color:#268bd2;">const </span><span style="color:#b58900;">listReducer </span><span style="color:#657b83;">= </span><span style="color:#268bd2;">listType =&gt; </span><span style="color:#657b83;">{
+  </span><span style="color:#268bd2;">const type </span><span style="color:#657b83;">= </span><span style="color:#268bd2;">listType</span><span style="color:#657b83;">.</span><span style="color:#859900;">toUpperCase</span><span style="color:#657b83;">();
+
+  </span><span style="color:#268bd2;">const </span><span style="color:#b58900;">items </span><span style="color:#657b83;">= (</span><span style="color:#268bd2;">state </span><span style="color:#657b83;">= </span><span style="color:#268bd2;">[]</span><span style="color:#657b83;">, </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">) </span><span style="color:#268bd2;">=&gt; </span><span style="color:#657b83;">{
+    </span><span style="color:#859900;">switch </span><span style="color:#657b83;">(</span><span style="color:#268bd2;">action</span><span style="color:#657b83;">.</span><span style="color:#859900;">type</span><span style="color:#657b83;">) {
+      </span><span style="color:#859900;">case </span><span style="color:#839496;">`</span><span style="color:#2aa198;">FETCH_${</span><span style="color:#268bd2;">type</span><span style="color:#2aa198;">}_SUCCESS</span><span style="color:#839496;">`</span><span style="color:#657b83;">:
+        </span><span style="color:#859900;">return </span><span style="color:#268bd2;">action</span><span style="color:#657b83;">.</span><span style="color:#268bd2;">items</span><span style="color:#657b83;">;
+      </span><span style="color:#859900;">case </span><span style="color:#839496;">`</span><span style="color:#2aa198;">FETCH_${</span><span style="color:#268bd2;">type</span><span style="color:#2aa198;">}_FAILURE</span><span style="color:#839496;">`</span><span style="color:#657b83;">:
+        </span><span style="color:#859900;">return </span><span style="color:#268bd2;">[]</span><span style="color:#657b83;">;
+      </span><span style="color:#859900;">default</span><span style="color:#657b83;">:
+        </span><span style="color:#859900;">return </span><span style="color:#268bd2;">state</span><span style="color:#657b83;">;
+    }
+  }
+
+  </span><span style="color:#93a1a1;">// stripping other functions for brevity
+
+  </span><span style="color:#859900;">return </span><span style="color:#b58900;">combineReducers</span><span style="color:#657b83;">({
+    </span><span style="color:#268bd2;">status</span><span style="color:#657b83;">,
+    </span><span style="color:#268bd2;">items</span><span style="color:#657b83;">,
+    </span><span style="color:#268bd2;">totalCount</span><span style="color:#657b83;">,
+    </span><span style="color:#268bd2;">totalPages
+  </span><span style="color:#657b83;">})
+}
+</span></code></pre>
+<p>See full code in <a rel="noopener" target="_blank" href="https://gist.github.com/tejasbubane/aa7477ca98c4c667a49d3eaf692dc717">this gist</a>.</p>
+<p>Here's how we now use our <code>listReducer</code>:</p>
+<pre style="background-color:#fdf6e3;">
+<code class="language-js" data-lang="js"><span style="color:#93a1a1;">// index.js - top-level reducer
+
+</span><span style="color:#268bd2;">const rootReducer </span><span style="color:#657b83;">= </span><span style="color:#b58900;">combineReducers</span><span style="color:#657b83;">({
+  products: </span><span style="color:#b58900;">listReducer</span><span style="color:#657b83;">(</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">products</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">),
+  orders: </span><span style="color:#b58900;">listReducer</span><span style="color:#657b83;">(</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">orders</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">),
+  warehouse_locations: </span><span style="color:#b58900;">listReducer</span><span style="color:#657b83;">(</span><span style="color:#839496;">&quot;</span><span style="color:#2aa198;">warehouse_locations</span><span style="color:#839496;">&quot;</span><span style="color:#657b83;">),
+  </span><span style="color:#859900;">...
+</span><span style="color:#657b83;">})
+</span></code></pre>
+<p>These type of reducers are also sometimes called <code>higher-order reducers</code> -
+because they are <a rel="noopener" target="_blank" href="https://en.wikipedia.org/wiki/Higher-order_function">higher-order functions</a>.</p>
+<p>If you found this interesting, also check out <a rel="noopener" target="_blank" href="https://reactjs.org/docs/higher-order-components.html">higher order components</a>.</p>
+
+    </div>
+
+    
+    
+
+    <div class="post-footer">
+        
+            
+                <div class="post-nav">
+                    
+                        <a class="previous" href="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;posts&#x2F;2021-01-17-refactoring-filters&#x2F;">‹ Refactoring Filters</a>
+                    
+                    
+                    
+                    
+                </div>
+            
+
+        
+
+    </div>
+
+    
+    
+</article>
+
+
+                </div>
+            </main>
+
+            
+            
+        </div>
+
+      
+          <script type="text/javascript" src="https:&#x2F;&#x2F;tejasbubane.github.io&#x2F;even.js" ></script>
+      
+    </body>
+
+</html>
