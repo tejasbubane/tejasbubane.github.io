@@ -53,7 +53,7 @@ scenarios without worrying about slowing our CI builds.
 
 [Sidekiq provides testing utilities with 3 modes][2]:
 * `fake`: Jobs remain in queue and not processed
-* `inline`: Run all jobs immediately within same process
+* `inline`: Execute job as soon as it is scheduled inline within same process
 * `disable`: Disable test utility, push jobs to redis
 
 For unit tests we actually need to execute jobs to assert against their behaviour.
@@ -82,7 +82,7 @@ end
 ```
 
 Now all that remains is to test if our controller schedules this worker. Remember to use `fake` mode here
-because we do not need to run the worker:
+because we do not need to execute the job:
 
 ```ruby
 # spec/requests/exports_controller_spec.rb
