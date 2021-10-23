@@ -51,7 +51,7 @@ Writing end-to-end tests for these is a challenge because adding so many scenari
 schedules the job. Unit tests run an order of magnitude faster than controller specs which allows us to cover all possible
 scenarios without worrying about slowing our CI builds.
 
-Sidekiq provides testing utilities with 3 modes:
+[Sidekiq provides testing utilities with 3 modes][2]:
 * `fake`: Jobs remain in queue and not processed
 * `inline`: Run all jobs immediately within same process
 * `disable`: Disable test utility, push jobs to redis
