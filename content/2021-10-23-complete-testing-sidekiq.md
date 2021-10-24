@@ -29,6 +29,7 @@ class SalesExportWorker
 
   private
   # each of the above steps is a private method
+  # which might call other services/workers
 end
 ```
 
