@@ -29,7 +29,6 @@ class SalesExportWorker
 
   private
   # each of the above steps is a private method
-  # which might call other services/workers
 end
 ```
 
@@ -45,7 +44,10 @@ class ExportsController < ApplicationController
   end
 end
 ```
-This worker is doing quite a lot of things. For sure the calculations come with complexities and edge-cases.
+This worker is doing quite a lot of things. We would like to refactor this into separate classes like `SalesCalculator`,
+`TaxCalculator`, `ExportGenerator`, `ExportEmailWorker`, etc. But before we can do that, we need tests which provide us a safety net
+and ensure we do not break any existing functionality in the application.
+
 Writing end-to-end tests for these is a challenge because adding so many scenarios in controller specs would be slow to run.
 
 [An ideal approach][3] here would be to write extensive unit tests for worker in isolation and then test whether controller
