@@ -28,3 +28,9 @@ even_profile_name = "Tejas Bubane"
 even_profile_info = "Ruby | Javascript | Haskell | λ"
 even_add_google_analytics = true
 even_gtag_tracking_id = "UA-152407711-1"
+
+twitter = "https://twitter.com/tejasbubane"
+github = "https://github.com/tejasbubane"
+linkedin = "http://in.linkedin.com/in/tejasbubane"
+stackoverflow = "https://stackoverflow.com/users/3507206/tejasbubane"
+slidedeck = "https://speakerdeck.com/tejasbubane"
