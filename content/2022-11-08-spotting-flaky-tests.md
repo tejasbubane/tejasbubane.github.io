@@ -113,8 +113,10 @@ end
 
 ## Implicit cast
 
-All our models use `uuid` primary keys... except `User` - because legacy database.
-If `id` is an integer and not a `uuid`, guess what? This test can randomly fail:
+Our project uses `uuid` primary keys on all models. We are so used to seeing `uuid` everywhere
+that we forget there is this one legacy `User` model which still uses integer `id` as primary key.
+
+If `id` is an integer and not a `uuid`, guess what? This following test can randomly fail:
 
 ```ruby
 context 'when user does not exist' do
@@ -135,10 +137,18 @@ class UserService
 end
 ```
 
-ActiveRecord will cast `uuid` to integer while constructing SQL query (because the underlying column is integer)
-and there could be chances of previously created user's id matching.
 
-Make sure to use correct data types:
+Run the following line multiple times in Rails console and look at the SQL queries.
+
+```ruby
+# users table has integer primary key
+User.find_by(id: SecureRandom.uuid)
+```
+
+You can find integer values for `id`. ActiveRecord will cast `uuid` to integer while constructing SQL query (because the underlying column is integer)
+and there could be chances of previously created user's id matching resulting in random failures.
+
+Make sure to use data that matches database types to avoid implicit casting leading to unexpected behaviour:
 
 ```ruby
 before { params[:id] = 0 }
