@@ -17,7 +17,7 @@ Some of these are trivial, others slightly complex. Examples use Ruby on Rails b
 expect(user.locations).to eq([location_1, location_2, location_3])
 ```
 
-Records being fetched from database by default do not have any order (unless you have a default scope of course):
+Records being fetched from database by default do not have any order (unless you have a default scope or some explicit order applied):
 
 ```ruby
 irb(main)> User.last.locations
@@ -26,10 +26,24 @@ SELECT  "locations".* FROM "locations" WHERE "locations"."user_id" = $1
 ```
 
 But [`eq`][1] expects array elements to be in exact same order `[location_1, location_2, location_3]`, which makes this test flaky.
-If ordering is not expected, [use `match_array` instead][2] (also available with alias `contain_exactly`).
+If ordering is not expected, [use `match_array` instead][2] (also available with alias `contain_exactly`):
 
 ```ruby
 expect(user.locations).to match_array([location_1, location_2, location_3])
+```
+
+Similarly, sometimes we want to check if a particular element "exists", but we do this:
+
+```ruby
+expect(user.locations.first.name).to eq('Mumbai')
+```
+
+(Assuming locations is not ordered), a better way is to test presence instead:
+
+```ruby
+mumbai = user.locations.find { |location| location.name == 'Mumbai' }
+# Or if locations is a relation: user.locations.where(name: 'Mumbai')
+expect(mumbai).to be_present
 ```
 
 ## Validation errors
