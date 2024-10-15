@@ -13,7 +13,7 @@ I was designing a caching system and ran into a problem where I wanted to delete
 Intuitively I assumed Redis would be fast enough to handle it [with sub-millisecond response times][2].
 Turns out Redis uses client-server model and each command waits for response. So if you are sending each delete separately, the latency can add up quickly, more so if you are running Redis on a different server or using a [managed offering][3].
 
-Redis pipelines can be used in such cases to fire multiple commands at once and not wait for response for each individual command. It reads all replies finally at once. This also throughput (ops/sec).
+Redis pipelines can be used in such cases to fire multiple commands at once and not wait for response for each individual command. It reads all replies finally at once. This improves throughput (ops/sec).
 
 Here's a simple benchmark on a local Redis instance:
 
