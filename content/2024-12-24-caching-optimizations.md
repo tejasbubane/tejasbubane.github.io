@@ -114,16 +114,16 @@ We can add version number to the cache key in addition to entity ID. eg. `user_1
 class CacheStore
   VERSION = '1'.freeze
 
-  def get(key, ttl)
+  def self.get(key, ttl)
    conn.get(key_name(key), ttl)
   end
 
-  def key_name(key)
+  def self.key_name(key)
     "#{key}-#{VERSION}"
   end
 end
 
-CacheStore.fetch('user-123')
+CacheStore.get('user-123')
 ```
 
 
