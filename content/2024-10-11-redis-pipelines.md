@@ -5,6 +5,10 @@ path = "posts/redis-pipelines-to-the-rescue"
 tags = ["redis", "ruby", "caching"]
 +++
 
+Walkthrough on a use-case where Redis pipelines saved the day.
+
+<!-- more -->
+
 In my [earlier blog post we saw how using redis connection pools can help us improve performance][1] in a multi-threaded/multi-process application like Rails.
 Now we will see another typical scenario where Redis is a bottleneck and how we can optimize it.
 
