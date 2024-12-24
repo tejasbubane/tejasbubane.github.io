@@ -102,11 +102,11 @@ Such a change will make cache inconsistent and will need workarounds in code to 
 
 Clearly this is not the best way since it requires storing version at multiple places (especially in our example of arrays) and increases cache size.
 
-## 2. Using redis databases
+## 2. Using redis databases:
 
 If our cache store is Redis, we can switch to a new DB when we change the schema. This has a drawback: we start fresh on new DB and our application will receive heavy cache miss and DB load for a brief period during transition.
 
-## 3. Adding version to cache key
+## 3. Adding version to cache key:
 
 We can add version number to the cache key in addition to entity ID. eg. `user_123_v1`. Here's a generic class to make it easier:
 
