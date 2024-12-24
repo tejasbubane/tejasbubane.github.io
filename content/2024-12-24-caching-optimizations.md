@@ -123,7 +123,7 @@ class CacheStore
   end
 end
 
-CacheStore.get('user-123')
+CacheStore.get("user-#{user.id}")
 ```
 
 
