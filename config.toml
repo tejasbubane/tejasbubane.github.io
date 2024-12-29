@@ -6,6 +6,7 @@ base_url = "https://tejasbubane.github.io"
 build_search_index = true
 theme = "even"
 generate_feeds = true
+feed_filenames = ["rss.xml", "atom.xml"]
 taxonomies = [
     {name = "tags", rss = true},
 ]
