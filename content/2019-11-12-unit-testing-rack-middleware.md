@@ -2,7 +2,7 @@
 title = "Unit testing rack middleware"
 path = "posts/2019-11-12-unit-testing-rack-middleware"
 [taxonomies]
-tags = ["ruby"]
+tags = ["ruby", "rack", "rspec", "testing"]
 +++
 
 Underneath (almost) all Ruby web application lies the [Rack](http://rack.github.io/) architecture.

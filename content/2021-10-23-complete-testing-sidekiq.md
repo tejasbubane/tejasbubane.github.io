@@ -2,7 +2,7 @@
 title = "Complete testing of sidekiq jobs"
 path = "posts/2021-10-23-complete-testing-sidekiq"
 [taxonomies]
-tags = ["ruby", "sidekiq", "testing", "rails"]
+tags = ["ruby", "sidekiq", "testing", "rails", "rspec"]
 +++
 
 In this post we will see how to test async [sidekiq][1] jobs end-to-end.
