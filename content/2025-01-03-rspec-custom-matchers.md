@@ -1,5 +1,5 @@
 +++
-title = "Elegant custom matchers in RSpec"
+title = "Writing elegant custom matchers in RSpec"
 path = "posts/rspec-custom-matchers"
 [taxonomies]
 tags = ["rspec", "ruby"]
