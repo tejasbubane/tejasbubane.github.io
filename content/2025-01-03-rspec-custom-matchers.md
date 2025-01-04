@@ -93,15 +93,19 @@ RSpec.describe 'UUID matcher' do
     expect('foobar').not_to be_a_uuid
   end
 
-  # Failure cases added for checking failure messages defined in matcher above
+  # Checking failure messages
   it 'fails with UUID' do
     string = SecureRandom.uuid
-    expect { expect(string).not_to be_a_uuid }.to fail_with("expected #{string} not to be a UUID")
+
+    expect { expect(string).not_to be_a_uuid }
+      .to fail_with("expected #{string} not to be a UUID")
   end
 
   it 'fails with plain string' do
     string = "foobar"
-    expect { expect(string).to be_a_uuid }.to fail_with("expected foobar to be a UUID")
+
+    expect { expect(string).to be_a_uuid }
+      .to fail_with("expected foobar to be a UUID")
   end
 end
 ```
