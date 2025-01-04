@@ -1,5 +1,5 @@
 +++
-title = "Custom matchers in RSpec"
+title = "Elegant custom matchers in RSpec"
 path = "posts/rspec-custom-matchers"
 [taxonomies]
 tags = ["rspec", "ruby"]
@@ -27,7 +27,7 @@ it "has UUID token" do
 end
 ```
 
-But we can do better with custom matcher:
+But we can do better with a custom matcher:
 
 ```ruby
 require 'rspec/expectations'
@@ -41,7 +41,7 @@ RSpec::Matchers.define :be_a_uuid do |uuid_format: UUID_FORMAT|
 end
 ```
 
-With this we can write:
+Put above custom matcher into a support helper and our test becomes:
 
 ```ruby
 it "has UUID token" do
@@ -73,6 +73,40 @@ RSpec::Matchers.define :be_a_uuid do |uuid_format: UUID_FORMAT|
   end
 end
 ```
+
+And just like all other code, let us test this custom matcher:
+
+```ruby
+require 'securerandom'
+require 'rspec/matchers/fail_matchers'
+RSpec.configure do |config|
+  config.include RSpec::Matchers::FailMatchers
+end
+
+RSpec.describe 'UUID matcher' do
+  # The matcher works
+  it 'matches with UUID' do
+    expect(SecureRandom.uuid).to be_a_uuid
+  end
+
+  it 'does not match with plain string' do
+    expect('foobar').not_to be_a_uuid
+  end
+
+  # Failure cases added for checking failure messages defined in matcher above
+  it 'fails with UUID' do
+    string = SecureRandom.uuid
+    expect { expect(string).not_to be_a_uuid }.to fail_with("expected #{string} not to be a UUID")
+  end
+
+  it 'fails with plain string' do
+    string = "foobar"
+    expect { expect(string).to be_a_uuid }.to fail_with("expected foobar to be a UUID")
+  end
+end
+```
+
+Notice how RSpec nicely exposes the `fail_with` matcher to check the failure messages.
 
 You can find full running example in [this gist][2].
 
