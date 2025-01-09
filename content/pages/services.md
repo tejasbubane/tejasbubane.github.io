@@ -15,6 +15,7 @@ I can provide:
 * Team re-alignment
 * Mentoring
 * Debugging critical bugs and performance issues
+* Ruby / Rails upgrades
 
 and much more...
 
