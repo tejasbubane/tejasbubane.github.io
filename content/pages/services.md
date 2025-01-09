@@ -19,3 +19,5 @@ I can provide:
 and much more...
 
 Let us chat: [https://calendly.com/tejasb/quick-chat](https://calendly.com/tejasb/quick-chat)
+
+You can also connect with me on LinkedIn: [https://www.linkedin.com/in/tejasbubane](https://www.linkedin.com/in/tejasbubane)
