@@ -21,7 +21,7 @@ external_links_target_blank = true
 even_title = "Tejas' Blog"
 even_menu = [
     {url = "$BASE_URL", name = "Home"},
-    {url = "$BASE_URL/tags", name = "Tags"},
+    {url = "$BASE_URL/services", name = "Services"},
     {url = "$BASE_URL/setup", name = "Setup"},
     {url = "$BASE_URL/atom.xml", name = "RSS"}
 ]
