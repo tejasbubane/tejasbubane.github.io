@@ -123,7 +123,7 @@ describe 'Exports', type: :request do
     expect(SalesExportWorker.jobs.size).to eq(1)
 
     # Check if arguments passed in correct order
-    expect(SalesExportWorker.jobs[0]['args]).to eq([account.id, admin.id])
+    expect(SalesExportWorker.jobs[0]['args']).to eq([account.id, admin.id])
   end
 end
 ```
