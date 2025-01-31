@@ -4,18 +4,18 @@ template = "about.html"
 path = "services"
 +++
 
-I have been building software and leading teams in fast-paced environments for over a decade. In the process I gained deep expertise in backend systems with Ruby on Rails, Postgresql and Elixir. Whether you're a startup looking to launch your first product or an established business seeking to modernize and scale, I am happy to help.
-
-I can provide:
+I have been building software and leading teams in fast-paced environments for over a decade. In the process, I gained deep expertise in backend systems with Ruby on Rails, PostgreSQL and Elixir. Whether you're a startup looking to launch your first product or an established business seeking to modernize and scale, I am happy to help with:
 
 * Custom software development
 * System architecture design / review
 * Team augmentation
 * Technical consultation
-* Team re-alignment
-* Mentoring
+* Performance analysis
+* Technical debt analysis and reduction strategy
 * Debugging critical bugs and performance issues
 * Ruby / Rails upgrades
+* Team re-alignment
+* Mentoring
 
 and much more...
 
