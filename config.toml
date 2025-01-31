@@ -10,6 +10,9 @@ feed_filenames = ["rss.xml", "atom.xml"]
 taxonomies = [
     {name = "tags", rss = true},
 ]
+author = "Tejas Bubane"
+minify_html = true
+default_language = "en"
 
 [markdown]
 highlight_code = true
