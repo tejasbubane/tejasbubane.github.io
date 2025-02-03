@@ -45,7 +45,38 @@ expect(service).to receive(:call) do |args, &block|
 end
 ```
 
+A more concrete example is when testing locking mechanism in Rails:
+
+```ruby
+bank_account.with_lock do
+  transactions.each do |transaction|
+    create_bank_transaction
+  end
+end
+```
+
+We usually test this like:
+
+```ruby
+expect(bank_account).to receive(:with_lock)
+expect(BankAccountTransaction.count).to eq(1)
+```
+
+A better way to ensure bank-transaction is created inside lock block would be:
+
+```ruby
+expect(subject).to receive(:with_lock) do |*_args, &block|
+  # block is provided to with_lock method
+  # execute the block and test if it creates transactions
+  expect { block.call }
+    .to change { BankAccountTransaction.count }.from(0).to(1)
+end
+```
+
+A complete working example can be found in [this gist][3].
+
 RSpec provides a lot of features on mocks and their arguments which you can [refer here][2].
 
 [1]: https://tejasbubane.github.io/posts/rspec-custom-matchers/
 [2]: https://github.com/rspec/rspec/tree/main/rspec-mocks#readme
+[3]: https://gist.github.com/tejasbubane/897712413c38fd57a3c516c6fae8e13f
