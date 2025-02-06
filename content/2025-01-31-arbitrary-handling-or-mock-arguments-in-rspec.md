@@ -45,7 +45,7 @@ expect(service).to receive(:call) do |args, &block|
 end
 ```
 
-A more concrete example is when testing locking mechanism in Rails:
+A more concrete example is when testing locking mechanism in Rails. Consider following code:
 
 ```ruby
 bank_account.with_lock do
