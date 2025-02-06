@@ -62,7 +62,7 @@ expect(bank_account).to receive(:with_lock)
 expect(BankAccountTransaction.count).to eq(1)
 ```
 
-A better way to ensure bank-transaction is created inside lock block would be:
+A better way to ensure the bank transaction is created inside lock would be:
 
 ```ruby
 expect(bank_account).to receive(:with_lock) do |*_args, &block|
