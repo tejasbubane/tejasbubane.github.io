@@ -30,11 +30,11 @@ But in today's age of microservices, application-level constraints may not be en
 There could be multiple services trying to update the data, one of which missing the validation.
 
 Above single-column cases should generally work fine with a monolith.
-But let us consider a case where we want to ensure either the `customer_id` or `channel_id` must be present:
+But let us consider a case where we want to ensure either the `user_id` or `channel_id` must be present:
 
 ```ruby
-validates :customer_id, presence: true, if: -> { channel_id.blank? }
-validates :channel_id, presence: true, if: -> { customer_id.blank? }
+validates :user_id, presence: true, if: -> { channel_id.blank? }
+validates :channel_id, presence: true, if: -> { user_id.blank? }
 ```
 
 In this case, multiple threads could try to remove one of those ids at the same time, each perfectly passing the Rails validation - and ending up with incorrect data.
@@ -45,8 +45,8 @@ For above example, we need the [`num_nonnulls` operator][2]:
 ```ruby
 class AddConstraintOnOrders < ActiveRecord::Migration[7.0]
   def change
-    add_check_constraint :orders, "num_nonnulls(customer_id, channel_id) > 0",
-      name: "orders_customer_or_channel_present"
+    add_check_constraint :orders, "num_nonnulls(user_id, channel_id) > 0",
+      name: "orders_user_or_channel_present"
   end
 end
 ```
