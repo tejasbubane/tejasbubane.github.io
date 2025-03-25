@@ -21,8 +21,8 @@ eg.
 We can encode these in Rails model validations:
 
 ```ruby
-validates :price, comparison: { greater_than: 0 }
-validates :discount, comparison: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
+validates :price, numericality: { greater_than: 0 }
+validates :discount, numericality: { in: 0..100 }
 validates :product_sku, length: { 8 }
 ```
 
