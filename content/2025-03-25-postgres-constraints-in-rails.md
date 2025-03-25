@@ -45,28 +45,37 @@ For above example, we need the [`num_nonnulls` operator][2]:
 ```ruby
 class AddConstraintOnOrders < ActiveRecord::Migration[7.0]
   def change
-    add_check_constraint :orders, "num_nonnulls(user_id, channel_id) > 0",
-      name: "orders_user_or_channel_present"
+    add_check_constraint :orders, "num_nonnulls(customer_id, channel_id) > 0",
+      name: "orders_customer_or_channel_present"
   end
 end
 ```
 
 `add_check_constraint` [was added in Rails 6.1][3], but you can use plain SQL migrations with earlier Rails versions. Make sure to name the constraint, otherwise the database will generate a generic name like `chk_rails_abcdef` which is difficult to debug.
 
-We can also compare two columns:
+We can also compare two columns - and you can also add the constraint at the time of table creation:
 
 ```ruby
-class AddConstraintOnEvents < ActiveRecord::Migration[7.0]
+class CreateEvents < ActiveRecord::Migration[7.0]
   def change
-    add_check_constraint :events, "end_time > start_time",
-      name: "events_ends_greater_than_starts"
+    create_table :events, force: true do |t|
+      t.string :name
+      t.timestamp :starts_at
+      t.timestamp :ends_at
+      t.check_constraint "ends_at > starts_at", name: :events_starts_greater_than_ends
+    end
   end
 end
 ```
 
 Read more about PostgreSQL constraints in the [docs][4].
 
+Failure of constraint raises `ActiveRecord::StatementInvalid` error.
+
+All code can be found in executable format in [this gist][5].
+
 [1]: https://tejasbubane.github.io/posts/2021-12-18-rails-7-postgres-generated-columns/
 [2]: https://www.postgresql.org/docs/current/functions-comparison.html
 [3]: https://github.com/rails/rails/commit/1944a7e74c6c1b7a6234414a00d294412c05fde1
 [4]: https://www.postgresql.org/docs/current/ddl-constraints.html
+[5]: https://gist.github.com/tejasbubane/7427d13355140cc66a5f910a484a699c
