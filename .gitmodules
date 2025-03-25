@@ -1,3 +1,4 @@
 [submodule "themes/even"]
 	path = themes/even
 	url = https://github.com/tejasbubane/even.git
+	branch = main
