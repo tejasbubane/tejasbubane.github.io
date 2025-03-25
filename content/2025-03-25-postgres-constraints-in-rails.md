@@ -45,19 +45,21 @@ For above example, we need the [`num_nonnulls` operator][2]:
 ```ruby
 class AddConstraintOnOrders < ActiveRecord::Migration[7.0]
   def change
-    add_check_constraint :orders, "num_nonnulls(user_id, channel_id) > 0"
+    add_check_constraint :orders, "num_nonnulls(user_id, channel_id) > 0",
+      name: "orders_user_or_channel_present"
   end
 end
 ```
 
-`add_check_constraint` [was added in Rails 6.1][3], but you can use plain SQL migrations with earlier Rails versions.
+`add_check_constraint` [was added in Rails 6.1][3], but you can use plain SQL migrations with earlier Rails versions. Make sure to name the constraint, otherwise the database will generate a generic name like `chk_rails_abcdef` which is difficult to debug.
 
 We can also compare two columns:
 
 ```ruby
 class AddConstraintOnEvents < ActiveRecord::Migration[7.0]
   def change
-    add_check_constraint :events, "end_time > start_time"
+    add_check_constraint :events, "end_time > start_time",
+      name: "events_ends_greater_than_starts"
   end
 end
 ```
