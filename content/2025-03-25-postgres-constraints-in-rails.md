@@ -27,10 +27,10 @@ validates :product_sku, length: { 8 }
 ```
 
 But in today's age of microservices, application-level constraints may not be enough.
-There could be multiple services trying to update the data, one of which missing the validation.
+Multiple services trying to update the data, one of which could be missing the validation.
 
 Above single-column cases should generally work fine with a monolith.
-But let us consider a case where we want to ensure either the `user_id` or `channel_id` must be present:
+But let us consider a multi-column case where we want to ensure either the `user_id` or `channel_id` must be present:
 
 ```ruby
 validates :user_id, presence: true, if: -> { channel_id.blank? }
@@ -51,7 +51,7 @@ class AddConstraintOnOrders < ActiveRecord::Migration[7.0]
 end
 ```
 
-`add_check_constraint` [was added in Rails 6.1][3], but you can use plain SQL migrations with earlier Rails versions. Make sure to name the constraint, otherwise the database will generate a generic name like `chk_rails_abcdef` which is difficult to debug.
+`add_check_constraint` [was added in Rails 6.1][3], but you can use plain SQL migrations with earlier Rails versions. Make sure to name the constraint, otherwise database will generate a generic name like `chk_rails_abcdef` which is difficult to debug.
 
 We can also compare two columns - and you can also add the constraint at the time of table creation:
 
@@ -70,9 +70,9 @@ end
 
 Read more about PostgreSQL constraints in the [docs][4].
 
-Failure of constraint raises `ActiveRecord::StatementInvalid` error.
+Failure of constraint raises `ActiveRecord::StatementInvalid` error, so you might need to handle that.
 
-All code can be found in executable format in [this gist][5].
+All code can be found in an executable format in [this gist][5].
 
 [1]: https://tejasbubane.github.io/posts/2021-12-18-rails-7-postgres-generated-columns/
 [2]: https://www.postgresql.org/docs/current/functions-comparison.html
