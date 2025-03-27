@@ -65,11 +65,9 @@ class CreateEvents < ActiveRecord::Migration[7.0]
 end
 ```
 
-Read more about PostgreSQL constraints in the [docs][4].
-
 Failure of constraint raises `ActiveRecord::StatementInvalid` error, so you might need to handle that.
 
-All code can be found in an executable format in [this gist][5].
+All code can be found in an executable format in [this gist][5]. Read more about PostgreSQL constraints in the [docs][4].
 
 [1]: https://tejasbubane.github.io/posts/2021-12-18-rails-7-postgres-generated-columns/
 [2]: https://www.postgresql.org/docs/current/functions-comparison.html
