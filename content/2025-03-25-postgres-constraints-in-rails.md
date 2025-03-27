@@ -26,10 +26,7 @@ validates :discount, numericality: { in: 0..100 }
 validates :product_sku, length: { 8 }
 ```
 
-But in today's age of microservices, application-level constraints may not be enough.
-Multiple services trying to update the data, one of which could be missing the validation.
-
-Above single-column cases should generally work fine with a monolith.
+Above single-column cases should generally work fine in most cases.
 But let us consider a multi-column case where we want to ensure either the `user_id` or `channel_id` must be present:
 
 ```ruby
