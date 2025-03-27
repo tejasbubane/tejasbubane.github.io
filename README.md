@@ -32,6 +32,12 @@ Run local server using:
 zola serve
 ```
 
+Make draft posts by adding a `draft = true` to front matter (top info section) of any blog post. Then to see posts including drafts:
+
+```sh
+zola serve --drafts
+```
+
 This will start server on http://localhost:1111
 
 For more usage instructions [refer this](https://www.getzola.org/documentation/getting-started/cli-usage/).
