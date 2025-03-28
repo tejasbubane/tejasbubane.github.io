@@ -59,7 +59,7 @@ class CreateEvents < ActiveRecord::Migration[7.0]
       t.string :name
       t.timestamp :starts_at
       t.timestamp :ends_at
-      t.check_constraint "ends_at > starts_at", name: :events_starts_greater_than_ends
+      t.check_constraint "ends_at > starts_at", name: :events_ends_greater_than_starts
     end
   end
 end
