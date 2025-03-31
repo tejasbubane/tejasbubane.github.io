@@ -12,7 +12,7 @@ Pattern matching in Ruby is not just for arrays and hashes, it can be used for c
 
 [Ruby 2.7 introduced pattern matching][1]. We can match over basic data types, arrays and hashes:
 
-_(I am using the `=>` syntax for brevity)_
+_(I am using the rightward assignment `=>` syntax in this blog post for brevity)_
 
 ```ruby
 1 => Integer
@@ -42,9 +42,9 @@ You can use `[]` or `()` for matching and can also assign variables:
 User = Data.define(:name, :email)
 u = User.new("Sam", "sam@example.com")
 
-u => User(name, email) # Matches and assigns name = "Sam" and email = "sam@example.com"
+u => User(name, email) # Matches and assigns variables name = "Sam" and email = "sam@example.com"
 
-# And Obviously fails when matching with a different class:
+# And obviously fails when matching with a different class:
 Account = Data.define(:name, :email)
 u => Account(name, email)
 # Account === #<data User ...> does not return true (NoMatchingPatternError)
@@ -135,7 +135,7 @@ You must've noticed the `keys` argument to `#deconstruct_keys`. Hash patterns (u
 {a: 1, b: 2, c: 3, d: 4} => { a: } # Works and assigns a = 1
 ```
 
-The keys used in pattern matching are passed here to `#deconstruct_keys` which can be used to create the resulting hash.
+The keys used in pattern are passed to `#deconstruct_keys` which are available to create the resulting hash.
 This is useful when hash creation is expensive, we can calculate only the requested subhash.
 
 [1]: https://www.ruby-lang.org/en/news/2019/12/25/ruby-2-7-0-released/
