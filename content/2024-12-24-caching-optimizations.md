@@ -36,7 +36,8 @@ On average, shopping cart changes way more often than user profile. If we split 
 # Separate cache store
 
 Applications generally use Redis for multiple purposes apart from caching. eg. storing background jobs for [sidekiq][4]. Recommended configuration for cache store usually differs from these tools.
-eg. [Sidekiq recommends noeviction policy][5]
+eg. [Sidekiq recommends noeviction policy][5], whereas we should always have eviction policy for cache.
+
 Also for separation of concerns we should separate these. Ideally separate Redis instances would be great but at the very least we should use separate databases.
 
 # Configuration
