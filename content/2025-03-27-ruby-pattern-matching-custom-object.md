@@ -11,8 +11,7 @@ Pattern matching in Ruby is not just for arrays and hashes, it can be used for c
 
 Ever since playing around with functional languages like [Haskell][8] and [Elixir][9], I was fascinated by the elegance of pattern matching.
 
-[Ruby 2.7 introduced experimental support for pattern matching][1] and it was [improved in later versions][4].
-It is amazing to see these concepts across programming paradigms so let us explore it in detail.
+[Ruby 2.7 introduced experimental support for pattern matching][1] and it was [improved in later versions][4]. It is amazing to see how these concepts transcend over programming paradigms, so let us explore it in an object oriented language.
 
 ## Basic objects
 
