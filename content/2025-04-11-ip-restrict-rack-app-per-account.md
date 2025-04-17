@@ -170,6 +170,8 @@ end
 
 Sidenote: For plain rack apps without Rails, I found [rack-test][6] a nifty tool for testing.
 
+Was this rack solution a bit overkill? Probably. Did I have fun exploring this solution? Definitely.
+
 All code along with tests can be found in [this executable gist][7].
 
 [1]: https://guides.rubyonrails.org/rails_on_rack.html
