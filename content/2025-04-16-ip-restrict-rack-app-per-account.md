@@ -1,5 +1,5 @@
 +++
-title = "Add IP restriction on Rack app for specific accounts"
+title = "Add IP restriction to Rack app for specific accounts"
 path = "posts/ip-restrict-rack-app-per-account"
 [taxonomies]
 tags = ["ruby", "rack", "rails"]
