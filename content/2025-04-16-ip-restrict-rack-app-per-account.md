@@ -1,5 +1,5 @@
 +++
-title = "Add IP restriction to Rack app for specific accounts"
+title = "Adding IP restriction to Rack app for specific accounts"
 path = "posts/ip-restrict-rack-app-per-account"
 [taxonomies]
 tags = ["ruby", "rack", "rails"]
@@ -170,7 +170,8 @@ end
 
 Sidenote: For plain rack apps without Rails, I found [rack-test][6] a nifty tool for testing.
 
-Was this rack solution a bit overkill? Probably. Did I have fun exploring this solution? Definitely.
+Was this rack solution a bit overkill? Probably.
+Did I have fun exploring this solution? Definitely.
 
 All code along with tests can be found in [this executable gist][7].
 
