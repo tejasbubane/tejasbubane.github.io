@@ -17,7 +17,7 @@ Ramchandra Guha gives a brilliant potted history of India starting at just befor
 
 ### On the negative side:
 
-It was fascinating to see traces some current happenings back in time:
+It was fascinating to see traces of some current happenings back in time:
 
 We always worship our great leaders, right since the first general election in 1951-52. After architecting the Indian constitution (1950) [B. R. Ambedkar][2] chose to leave Congress and contest separately. Thanks to Nehru's aura, he lost to a milkman named Kajrolkar. On which [P. K. Atre][3] amusingly wrote:
 
@@ -39,7 +39,7 @@ You can find many such examples in the book. Perhaps these days things have gone
 
 ### On the positive side:
 
-Right from independence, on every major issue, west proclaimed the country would fall apart. So many small princely states, religious hatred, inexperience, deaths of some leaders, wars, etc were proving their point beyond doubt. And yet miraculously it stood strong on all those obstacles and grew.
+Right from independence, on every major issue, west proclaimed the country would fall apart. So many small princely states, religious hatred, inexperience, deaths of some leaders, wars, etc were proving their point beyond doubt. And yet miraculously India stood strong on all those obstacles and grew.
 
 This is just a small glimpse, there is so much more in the book and I am so glad I read it.
 
