@@ -19,7 +19,7 @@ It was fascinating to see traces of some current happenings back in time:
 
 ## The negative side:
 
-* We always worship our great leaders, right since the first general election in 1951-52. After architecting the Indian constitution in 1950, [B. R. Ambedkar][2] chose to leave Congress and contest separately. Thanks to Nehru's aura, he lost to a milkman named Kajrolkar. [P. K. Atre][3] amusingly wrote in Marathi: `कुठे तो घटनाकार आंबेडकर आणि कुठे हा लोणीविक्या कजरोळकर` which rougly translates to: `Where the great constitution maker Ambedkar and where this butter-seller Kajrolkar`. We see many such occurrences where capable and educated candidates lose by a landslide against incompetent ones.
+* We always worship our great leaders, right since the first general election in 1951-52. After architecting the Indian constitution in 1950, [B. R. Ambedkar][2] chose to leave Congress and contest separately. Thanks to Nehru's aura, he lost to a milkman named Kajrolkar. [P. K. Atre][3] amusingly wrote in Marathi: `कुठे तो घटनाकार आंबेडकर आणि कुठे हा लोणीविक्या कजरोळकर` which rougly translates to: `Where the great constitution maker Ambedkar and where this butter-seller Kajrolkar`. We see many such occurrences today where capable and educated candidates lose by a landslide against incompetent ones.
 
 * After the 1952 elections, someone remarked `"even a lamp-post standing on the Congress ticket could have been elected"`.
 
