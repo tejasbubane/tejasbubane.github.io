@@ -37,7 +37,7 @@ You can find many many such examples in the book. Perhaps these days things have
 
 ## The positive side:
 
-Independece, Nehru's death, wars - after every major event, the west always proclaimed that country would fall apart. So many small princely states, religious hatred, nascant democracy of such huge scale, etc. were proving their point beyond doubt. And yet miraculously India stood strong on all those obstacles and grew.
+Independence, Nehru's death, wars - after every major event, the west always proclaimed that country would fall apart. So many small princely states, religious hatred, nascant democracy of such huge scale, etc. were proving their point beyond doubt. And yet miraculously India stood strong on all those obstacles and grew.
 
 This is just a small glimpse, there is so much more in the book and I am so glad I read it.
 
