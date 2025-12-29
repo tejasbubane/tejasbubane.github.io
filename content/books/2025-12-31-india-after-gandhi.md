@@ -25,7 +25,7 @@ It was fascinating to see traces of some current happenings back in time:
 
 * One person becoming the embodiment of whole nation.
 
-* The 1975 emergency and re-election of same prime minister after just few years.
+* The 1975 emergency and re-election of same Prime Minister after just few years.
 
 * Petty acts of vindictiveness and bans on a singer who refused to perform in a programme to raise money for the nation-wide family planning drive.
 
@@ -33,7 +33,7 @@ It was fascinating to see traces of some current happenings back in time:
 
 * [Congress was split][4] into two parties Congress (O) and Congress (R). Maharashtra has seen [similar][5] [breakups][6] recently.
 
-You can find many many such examples in the book. Perhaps these days things have gone too far and further amplified by social media, but the roots were seen back in history.
+You can find many many such examples in the book. Perhaps these days things have gone too far and further amplified by social media, but the roots were already visible back in history.
 
 ## The positive side:
 
