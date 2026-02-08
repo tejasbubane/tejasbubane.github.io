@@ -14,9 +14,8 @@ author = "Tejas Bubane"
 minify_html = true
 default_language = "en"
 
-[markdown]
-highlight_code = true
-highlight_theme = "one-dark"
+[markdown.highlighting]
+theme = "github-dark"
 render_emoji = true
 external_links_target_blank = true
 
