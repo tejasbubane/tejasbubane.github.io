@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Tejas&#x27; Blog</title>
+    <subtitle>Thoughts and learnings on writing better software</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://tejasbubane.github.io/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://tejasbubane.github.io"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-12-31T00:00:00+00:00</updated>
+    <id>https://tejasbubane.github.io/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Year in Books 2025</title>
+        <published>2025-12-31T00:00:00+00:00</published>
+        <updated>2025-12-31T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/books/year-in-books-2025/"/>
+        <id>https://tejasbubane.github.io/books/year-in-books-2025/</id>
+        
+        <summary type="html">&lt;p&gt;I got back into a regular reading habit after few years. Here are the books I read:&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>India after Gandhi</title>
+        <published>2025-12-29T00:00:00+00:00</published>
+        <updated>2025-12-29T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/books/india-after-gandhi/"/>
+        <id>https://tejasbubane.github.io/books/india-after-gandhi/</id>
+        
+        <summary type="html">&lt;p&gt;My first and longest read of 2025.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Rails pluralization with translations</title>
+        <published>2025-12-04T00:00:00+00:00</published>
+        <updated>2025-12-04T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2025-12-04-rails-pluralize-translate/"/>
+        <id>https://tejasbubane.github.io/posts/2025-12-04-rails-pluralize-translate/</id>
+        
+        <summary type="html">&lt;p&gt;A short blog on some tips to cleanly pluralize and translate content in Rails.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Adding IP restriction to Rack app for specific accounts</title>
+        <published>2025-04-16T00:00:00+00:00</published>
+        <updated>2025-04-16T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/ip-restrict-rack-app-per-account/"/>
+        <id>https://tejasbubane.github.io/posts/ip-restrict-rack-app-per-account/</id>
+        
+        <summary type="html">&lt;p&gt;Exploring an interesting requirement of adding IP restrictions on a Rails app.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Pattern matching on custom objects in Ruby</title>
+        <published>2025-03-27T00:00:00+00:00</published>
+        <updated>2025-03-27T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/ruby-pattern-matching-custom-objects/"/>
+        <id>https://tejasbubane.github.io/posts/ruby-pattern-matching-custom-objects/</id>
+        
+        <summary type="html">&lt;p&gt;Pattern matching in Ruby is not just for arrays and hashes, it can be used for custom objects too.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Using PostgreSQL database constraints</title>
+        <published>2025-03-25T00:00:00+00:00</published>
+        <updated>2025-03-25T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/using-postgres-database-constraints-in-rails/"/>
+        <id>https://tejasbubane.github.io/posts/using-postgres-database-constraints-in-rails/</id>
+        
+        <summary type="html">&lt;p&gt;Effective use of database constraints can ensure data integrity.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Arbitrary handling of mock arguments in RSpec</title>
+        <published>2025-01-31T00:00:00+00:00</published>
+        <updated>2025-01-31T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/arbitrary-handling-of-mock-arguments-in-rspec/"/>
+        <id>https://tejasbubane.github.io/posts/arbitrary-handling-of-mock-arguments-in-rspec/</id>
+        
+        <summary type="html">&lt;p&gt;Testing mock arguments with ease in RSpec.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Writing elegant custom matchers in RSpec</title>
+        <published>2025-01-03T00:00:00+00:00</published>
+        <updated>2025-01-03T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/rspec-custom-matchers/"/>
+        <id>https://tejasbubane.github.io/posts/rspec-custom-matchers/</id>
+        
+        <summary type="html">&lt;p&gt;RSpec brings Ruby&#x27;s readability to testing. Custom matchers take it to the next level :rocket:.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Caching optimizations</title>
+        <published>2024-12-24T00:00:00+00:00</published>
+        <updated>2024-12-24T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/caching-optimizations/"/>
+        <id>https://tejasbubane.github.io/posts/caching-optimizations/</id>
+        
+        <summary type="html">&lt;p&gt;Some good practices when building a robust cache for backend web applications.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Redis pipelines to the rescue</title>
+        <published>2024-10-11T00:00:00+00:00</published>
+        <updated>2024-10-11T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/redis-pipelines-to-the-rescue/"/>
+        <id>https://tejasbubane.github.io/posts/redis-pipelines-to-the-rescue/</id>
+        
+        <summary type="html">&lt;p&gt;Walkthrough on a use-case where Redis pipelines saved the day.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Spotting flaky tests</title>
+        <published>2022-11-08T00:00:00+00:00</published>
+        <updated>2022-11-08T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2022-11-08-spotting-flaky-tests/"/>
+        <id>https://tejasbubane.github.io/posts/2022-11-08-spotting-flaky-tests/</id>
+        
+        <summary type="html">&lt;p&gt;Sharing some examples of flaky tests from my experience.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Exception handling with Sidekiq</title>
+        <published>2022-05-29T00:00:00+00:00</published>
+        <updated>2022-05-29T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2022-05-29-sidekiq-exception-handling/"/>
+        <id>https://tejasbubane.github.io/posts/2022-05-29-sidekiq-exception-handling/</id>
+        
+        <summary type="html">&lt;p&gt;Make &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;sidekiq.org&quot;&gt;Sidekiq&lt;&#x2F;a&gt; play nicely with errors and error-tracking tools.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>PostgreSQL generated columns in Rails</title>
+        <published>2021-12-18T00:00:00+00:00</published>
+        <updated>2021-12-18T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2021-12-18-rails-7-postgres-generated-columns/"/>
+        <id>https://tejasbubane.github.io/posts/2021-12-18-rails-7-postgres-generated-columns/</id>
+        
+        <summary type="html">&lt;p&gt;Rails 7 added support for PostgreSQL generated columns.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Complete testing of sidekiq jobs</title>
+        <published>2021-10-23T00:00:00+00:00</published>
+        <updated>2021-10-23T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2021-10-23-complete-testing-sidekiq/"/>
+        <id>https://tejasbubane.github.io/posts/2021-10-23-complete-testing-sidekiq/</id>
+        
+        <summary type="html">&lt;p&gt;In this post we will see how to test async &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;sidekiq.org&quot;&gt;sidekiq&lt;&#x2F;a&gt; jobs end-to-end.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Currying Reducers</title>
+        <published>2021-02-22T00:00:00+00:00</published>
+        <updated>2021-02-22T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2021-02-22-currying-reducers/"/>
+        <id>https://tejasbubane.github.io/posts/2021-02-22-currying-reducers/</id>
+        
+        <summary type="html">&lt;p&gt;Yesterday I was reading &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;www.coursera.org&#x2F;lecture&#x2F;progfun1&#x2F;lecture-2-2-currying-fOuQ9&quot;&gt;curried (partial) functions in Scala&lt;&#x2F;a&gt; and I remembered the first time I used them in an actual production application.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Refactoring Filters</title>
+        <published>2021-01-17T00:00:00+00:00</published>
+        <updated>2021-01-17T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2021-01-17-refactoring-filters/"/>
+        <id>https://tejasbubane.github.io/posts/2021-01-17-refactoring-filters/</id>
+        
+        <summary type="html">&lt;p&gt;Recently I was working on refactoring some unwieldy code for filtering data. Here&#x27;s a short story of how it went :slightly_smiling_face:.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Redis connection pool in Rails</title>
+        <published>2020-04-22T00:00:00+00:00</published>
+        <updated>2020-04-22T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2020-04-22-redis-connection-pool-in-rails/"/>
+        <id>https://tejasbubane.github.io/posts/2020-04-22-redis-connection-pool-in-rails/</id>
+        
+        <summary type="html">&lt;p&gt;Rails is multi-threaded, but can your redis connection handle it?&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Unit testing rack middleware</title>
+        <published>2019-11-12T00:00:00+00:00</published>
+        <updated>2019-11-12T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2019-11-12-unit-testing-rack-middleware/"/>
+        <id>https://tejasbubane.github.io/posts/2019-11-12-unit-testing-rack-middleware/</id>
+        
+        <summary type="html">&lt;p&gt;Underneath (almost) all Ruby web application lies the &lt;a rel=&quot;external&quot; href=&quot;http:&#x2F;&#x2F;rack.github.io&#x2F;&quot;&gt;Rack&lt;&#x2F;a&gt; architecture.
+With minimal interface, it is simple to write a middleware. Let&#x27;s see how to test it.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Functor Composition</title>
+        <published>2019-10-02T00:00:00+00:00</published>
+        <updated>2019-10-02T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2019-10-02-functor-composition/"/>
+        <id>https://tejasbubane.github.io/posts/2019-10-02-functor-composition/</id>
+        
+        <summary type="html">&lt;p&gt;Composition is the beauty of functional programming &amp;amp; haskell with it&#x27;s typeclasses excels at this.
+Let&#x27;s see what &lt;code&gt;Functors&lt;&#x2F;code&gt; are and how they compose.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>Serializers Everywhere</title>
+        <published>2019-01-21T00:00:00+00:00</published>
+        <updated>2019-01-21T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Tejas Bubane
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tejasbubane.github.io/posts/2019-01-21-serializers-everywhere/"/>
+        <id>https://tejasbubane.github.io/posts/2019-01-21-serializers-everywhere/</id>
+        
+        <summary type="html">&lt;p&gt;Manage multiple versions of &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;rails-api&#x2F;active_model_serializers&quot;&gt;JSON serializers&lt;&#x2F;a&gt; in a &lt;a rel=&quot;external&quot; href=&quot;https:&#x2F;&#x2F;rubyonrails.org&#x2F;&quot;&gt;Rails&lt;&#x2F;a&gt; application with ease.&lt;&#x2F;p&gt;</summary>
+        
+    </entry>
+</feed>
