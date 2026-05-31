@@ -42,7 +42,7 @@ And our `limit_proc` can use the API token to fetch associated account and its l
 ```ruby
 # config/initializers/rack_attack.rb
 
-limit_proc = proc do |req|
+limit_proc = proc do |request|
   token = request.headers["Api-Token"]
 
   custom_limit = ApiToken.find_by(token:)&.account&.rate_limit
@@ -53,7 +53,7 @@ end
 
 `rack-attack` also allows passing proc for `period`, but we don't need it in our case so we keep it fixed to 60 seconds.
 
-This works but the proc is called for every request issuing a database query on every request, including invalid ones with unrecognised tokens. This can be optimized using cache:
+This works but the proc is called for every request which means an some SQL queries are fired on every request, including invalid ones with unrecognised tokens. This can be optimized using cache:
 
 ```ruby
 # config/initializers/redis.rb
@@ -63,12 +63,12 @@ REDIS = ConnectionPool.new(size: 20, timeout: 5) do
 end
 ```
 
-To see why I use a connection pool, read [my previous blog][3].
+I am using Redis here, but you can replace it `Rails.cache`. To see why I use a connection pool, read [my previous blog][3].
 
 ```ruby
 # config/initializers/rack_attack.rb
 
-limit_proc = proc do |req|
+limit_proc = proc do |request|
   token = request.headers["Api-Token"]
 
   custom_limit = REDIS.with do |conn|
