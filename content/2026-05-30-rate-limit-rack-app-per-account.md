@@ -95,7 +95,7 @@ The cache entry is written whenever an account's rate limit is saved, and rack-a
 
 Thus with rack-attack throttle and Redis cache, we have a performant, per-account configurable rate limiting.
 
-#### Rails built-in rate-limit
+## Rails built-in rate-limit
 
 A quick note on why I ~did~ could not [Rails' own rate-limit][4]:
 
