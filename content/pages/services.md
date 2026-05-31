@@ -4,7 +4,9 @@ template = "about.html"
 path = "services"
 +++
 
-I have been building software and leading teams in fast-paced environments for over a decade. In the process, I gained deep expertise in backend systems with Ruby on Rails, PostgreSQL and Elixir. Whether you're a startup looking to launch your first product or an established business seeking to modernize and scale, I am happy to help with:
+I have been building software and leading teams in fast-paced environments for over a decade. In the process, I gained deep expertise in backend systems primarily with Ruby on Rails and PostgreSQL but also with Typescript, Node.js and Elixir.
+
+Whether you're a startup looking to launch your first product or an established business seeking to modernize and scale, I am happy to help with:
 
 * Custom software development
 * System architecture design / review
