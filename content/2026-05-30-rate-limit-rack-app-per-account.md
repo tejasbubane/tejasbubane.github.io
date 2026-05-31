@@ -13,6 +13,8 @@ In a [previous post][1] I explored how to add account-specific IP whitelisting i
 
 We generally add global rate limits via nginx or CDN - a limit of X requests per minute/hour for a particular IP. But some customer accounts in my application needed extra limits for API usage and were willing to pay more for it 💰, however the default limit should stay for remaining customers. This meant the global CDN rate limit would not work.
 
+## rack-attack ⚡️
+
 Rate limiting is hard to implement from scratch - we need to count the number of requests during an interval (generally per minute but could also be per hour). [rack-attack][2]'s throttle configuration handles this precisely: it restricts requests to a given limit within a given period.
 
 A very basic config would look like this:
