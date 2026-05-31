@@ -91,7 +91,7 @@ def set_rate_limit(token, rate_limit)
 end
 ```
 
-The cache entry is written whenever an account's rate limit is saved, and rack-attack reads it on each incoming request — keeping the hot path free of database calls.
+The cache entry is written whenever an account's rate limit is saved, and rack-attack reads it on each incoming request, so our hot path is free of database calls.
 
 Thus with rack-attack throttle and Redis cache, we have a performant, per-account configurable rate limiting.
 
