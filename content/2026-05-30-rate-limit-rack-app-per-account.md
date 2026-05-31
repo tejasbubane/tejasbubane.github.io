@@ -66,6 +66,18 @@ end
 I am using Redis here, but you can replace it `Rails.cache`. To see why I use a connection pool, read [my previous blog][3].
 
 ```ruby
+# app/models/account.rb
+
+def set_rate_limit(token, rate_limit)
+  cache_key = "api_rate_limit:#{token}"
+
+  REDIS.with do |conn|
+    conn.set(cache_key, rate_limit)
+  end
+end
+```
+
+```ruby
 # config/initializers/rack_attack.rb
 
 limit_proc = proc do |request|
@@ -76,18 +88,6 @@ limit_proc = proc do |request|
   end
 
   (custom_limit || DEFAULT_RATE_LIMIT).to_i
-end
-```
-
-```ruby
-# app/models/account.rb
-
-def set_rate_limit(token, rate_limit)
-  cache_key = "api_rate_limit:#{token}"
-
-  REDIS.with do |conn|
-    conn.set(cache_key, rate_limit)
-  end
 end
 ```
 
