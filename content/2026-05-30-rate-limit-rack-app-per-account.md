@@ -1,5 +1,5 @@
 +++
-title = "Adding account-specific rate limits in a Rails app"
+title = "Implementing account-specific rate limits in Rails"
 path = "posts/rate-limit-rack-app-per-account"
 [taxonomies]
 tags = ["ruby", "rack", "rails"]
