@@ -69,7 +69,7 @@ since they don't change very often.
 For most applications this is a fine solution. But let us take it up a notch by restricting the invalid requests
 even before they hit our Rails controllers!
 
-## Rack :zap:
+## Rack ⚡️
 
 [Rails is built on Rack][1] - a modular interface for web applications. We can [add a rack middleware][2] to validate IPs.
 

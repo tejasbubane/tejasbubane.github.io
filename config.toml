@@ -16,7 +16,7 @@ default_language = "en"
 
 [markdown.highlighting]
 theme = "github-dark"
-render_emoji = true
+emoji_rendering = true
 external_links_target_blank = true
 
 [extra]
