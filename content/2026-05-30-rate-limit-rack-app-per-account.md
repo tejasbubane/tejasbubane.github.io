@@ -95,6 +95,18 @@ The cache entry is written whenever an account's rate limit is saved, and rack-a
 
 Thus with rack-attack throttle and Redis cache, we have a performant, per-account configurable rate limiting.
 
+#### Rails built-in rate-limit
+
+A quick note on why I ~did~ could not [Rails' own rate-limit][4]:
+
+* My app was running an older version of Rails which did not have the built-in rate limit.
+* At the time of writing this (May 2026), there are a couple things that Rails rate limiter does not support:
+   - Dynamic(callable) arguments as limit. [Added recently][5] but not yet released.
+   - Rate limit on something other than `remote_ip` (API token in our example). [Also added recently][6] but not yet released.
+
 [1]: https://tejasbubane.github.io/posts/ip-restrict-rack-app-per-account/
 [2]: https://github.com/rack/rack-attack
 [3]: https://tejasbubane.github.io/posts/2020-04-22-redis-connection-pool-in-rails/
+[4]: https://api.rubyonrails.org/classes/ActionController/RateLimiting/ClassMethods.html
+[5]: https://github.com/rails/rails/pull/56128
+[6]: https://github.com/rails/rails/pull/55555
