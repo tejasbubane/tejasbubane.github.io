@@ -101,7 +101,7 @@ Thus with rack-attack throttle and Redis cache, we have a performant, per-accoun
 
 ## Rails built-in rate-limit
 
-A quick note on why I ~did~ could not [Rails' own rate-limit][4]:
+A quick note on why I ~did~ could not use [Rails' own rate-limit][4]:
 
 * My app was running an older version of Rails which did not have the built-in rate limit.
 * At the time of writing this (May 2026), there are a couple things that Rails rate limiter does not support:
