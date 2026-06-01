@@ -55,7 +55,7 @@ end
 
 `rack-attack` also allows passing proc for `period`, but we don't need it in our case so we keep it fixed to 60 seconds.
 
-This works but the proc is called for every request which means an some SQL queries are fired on every request, including invalid ones with unrecognised tokens. This can be optimized using cache:
+This works but the `proc` is called for every request which means some SQL queries are fired on every request, including invalid ones with unrecognised tokens. This can be optimized using cache:
 
 ```ruby
 # config/initializers/redis.rb
@@ -65,7 +65,9 @@ REDIS = ConnectionPool.new(size: 20, timeout: 5) do
 end
 ```
 
-I am using Redis here, but you can replace it `Rails.cache`. To see why I use a connection pool, read [my previous blog][3].
+I am using Redis here, but you can easily replace it with any other cache store like `Rails.cache`. To see why I use a connection pool, read [my previous blog][3].
+
+The cache entry is written whenever an account's rate limit is saved.
 
 ```ruby
 # app/models/account.rb
@@ -78,6 +80,8 @@ def set_rate_limit(token, rate_limit)
   end
 end
 ```
+
+And rack-attack reads it on each request, so our hot path is free of database calls.
 
 ```ruby
 # config/initializers/rack_attack.rb
@@ -92,8 +96,6 @@ limit_proc = proc do |request|
   (custom_limit || DEFAULT_RATE_LIMIT).to_i
 end
 ```
-
-The cache entry is written whenever an account's rate limit is saved, and rack-attack reads it on each incoming request, so our hot path is free of database calls.
 
 Thus with rack-attack throttle and Redis cache, we have a performant, per-account configurable rate limiting.
 
