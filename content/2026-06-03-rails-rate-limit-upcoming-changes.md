@@ -5,7 +5,7 @@ path = "posts/rails-rate-limit-upcoming-changes"
 tags = ["ruby", "rack", "rails"]
 +++
 
-Rails 7.2 introduced a built-in rate limiting and now the next version of Rails has a few nice improvements lined up.
+A quick look at new rate-limiter features in the upcoming Rails version.
 
 <!-- more -->
 
@@ -21,13 +21,13 @@ class SignupController < ApplicationController
 end
 ```
 
-In the upcoming Rails 8.2, two new features will be quite useful. I had mentioned them in [my previous blog on rate limiting][4], but let us look at them in detail here.
+Upcoming Rails 8.2 adds two useful improvements to the built-in rate limiter. I had mentioned them in [my previous blog on rate limiting][4], but let us look at them in detail here.
 
-# Dynamic duration and window
+# Dynamic limit and window
 
 [Pull request][5]
 
-Previously the duration `to:` and window `within:` parameters only accepted fixed values. Now they can be a callable (method name, proc or lambda) allowing dynamic values:
+Previously the limit `to:` and window `within:` parameters only accepted fixed values. Now they can be a callable (method name, proc or lambda) allowing dynamic values:
 
 ```ruby
 class EmployeesController < ApplicationController
@@ -55,7 +55,17 @@ This allows us to change the rate limit based on business logic.
 
 [Pull request][6]
 
-Default rate limit is on `remote_ip`. Now you can pass object which responds to `cache_key`:
+By default, rate limits are keyed on `remote_ip`. The `by:` option lets you override this key.
+
+For example, if we want to implement a per-user rate limit:
+
+```ruby
+class ReportsController < ApplicationController
+  rate_limit to: 20, within: 1.minute, by: -> { "user/#{current_user.id}" }
+end
+```
+
+Or we could move the method to `User` model:
 
 ```ruby
 class User < ApplicationRecord
@@ -67,13 +77,48 @@ end
 
 ```ruby
 class ReportsController < ApplicationController
+  rate_limit to: 20, within: 1.minute, by: -> { current_user.cache_key }
+end
+```
+
+Now with Rails 8.2 if `by:` is a callable and returns an object, `cache_key` method will be called on the returned object.
+
+```ruby
+class User < ApplicationRecord
+  def cache_key
+    "rate-limit:user:#{id}"
+  end
+end
+```
+
+```ruby
+class ReportsController < ApplicationController
+  # by: works because User responds to cache_key.
   rate_limit to: 20, within: 1.minute, by: -> { current_user }
 end
 ```
 
-This implements a per-user rate limit.
+In this case, Rails will implicitly call `current_user.cache_key` and use it to group rate limits.
 
-All the code code and tests can be found in [this gist][7].
+Now one might see a few problems with this `cache_key` approach:
+- `User` model might have a `cache_key` for another purpose (caching the user itself - not rate limit).
+- Rate-limit is not a model responsibility.
+
+Since this is duck-typing, any object responding to cache_key works — it doesn't have to be an ActiveRecord model. A plain Ruby object works just as well:
+
+```ruby
+UserRateLimit = Data.define(:user) do
+  def cache_key
+    "rate-limit:user:#{user.id}"
+  end
+end
+
+class ReportsController < ApplicationController
+  rate_limit to: 20, within: 1.minute, by: -> { UserRateLimit.new(current_user) }
+end
+```
+
+All the code and tests can be found in [this gist][7].
 
 [1]: https://github.com/rack/rack-attack
 [2]: https://github.com/rails/rails/pull/50490
