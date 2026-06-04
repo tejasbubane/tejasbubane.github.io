@@ -27,7 +27,7 @@ Upcoming Rails 8.2 adds two useful improvements to the built-in rate limiter. I 
 
 [Pull request][5]
 
-Previously the limit `to:` and window `within:` parameters only accepted fixed values. Now they can be a callable (method name, proc or lambda) allowing dynamic values:
+Previously the limit `to:` and window `within:` parameters only accepted fixed values. Now with Rails 8.2, they can be a callable (method name, proc or lambda) allowing dynamic values:
 
 ```ruby
 class EmployeesController < ApplicationController
@@ -104,7 +104,7 @@ Now one might see a few problems with this `cache_key` approach:
 - `User` model might have a `cache_key` for another purpose (caching the user itself - not rate limit).
 - Rate-limit is not a model responsibility.
 
-Since this is duck-typing, any object responding to cache_key works — it doesn't have to be an ActiveRecord model. A plain Ruby object works just as well:
+Since this is duck-typing, any object responding to `cache_key` works — it doesn't have to be an `ActiveRecord` model. A plain Ruby object works just as well:
 
 ```ruby
 UserRateLimit = Data.define(:user) do
