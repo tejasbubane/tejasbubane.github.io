@@ -33,7 +33,7 @@ Assume we have entities like `User`, `Company`, `Course`, etc., we can create an
 type ApiResponse = {
     data: User | Company | Course;
     status: number;
-}
+};
 ```
 
 But then every time we add a new entity in our system, we also need to update the ApiResponse. Instead we can use [generics][4]:
@@ -42,7 +42,7 @@ But then every time we add a new entity in our system, we also need to update th
 type ApiResponse<T> = {
     data: T;
     status: number;
-}
+};
 ```
 
 And then use it like `ApiResponse<User>`, `ApiResponse<Company>`, `ApiResponse<Course>`.
@@ -82,6 +82,24 @@ type Users = StrictArray<User | Admin | SuperAdmin>;
 ```
 
 That `T extends unknown` seems redundant, but it is a dummy conditional that activates distributivity. Because `T` appears directly on the left side of `extends`, TypeScript applies the conditional to each member of the union, giving us our desired type `User[] | Admin[] | SuperAdmin[]`.
+
+Another common use of distributivity is filtering a union or removing types from a union.
+
+Taking our previous example of `UserRole`:
+
+```ts
+type UserRole = "employee" | "admin" | "superadmin";
+```
+
+We can create a type that removes regular employees and keeps only admin roles:
+
+```ts
+type AdminRole<T> = T extends "admin" | "superadmin" ? T : never;
+
+type OnlyAdmins = AdminRole<UserRole>;
+```
+
+`OnlyAdmins` evaluates to `"admin" | "superadmin"`.
 
 [1]: https://github.com/tejasbubane/haskell-book-code
 [2]: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types
