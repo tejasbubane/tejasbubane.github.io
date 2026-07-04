@@ -1,6 +1,6 @@
 +++
 title = "Distributive Conditional Types in TypeScript"
-path = "posts/2026-06-28-typescript-distributive-union-types"
+path = "posts/2026-07-04-typescript-distributive-union-types"
 [taxonomies]
 tags = ["typescript"]
 +++
