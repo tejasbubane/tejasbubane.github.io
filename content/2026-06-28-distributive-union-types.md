@@ -1,19 +1,19 @@
 +++
-title = "Typescript Distributive Union Types"
+title = "Distributive Conditional Types in TypeScript"
 path = "posts/2026-06-28-typescript-distributive-union-types"
 [taxonomies]
 tags = ["typescript"]
 +++
 
-A quick look at the interesting behavior of TypeScript `generics` in combination with `unions`.
+A quick look at how TypeScript `conditional` types behave with `union` types.
 
 <!-- more -->
 
-I am digging deeper into TypeScript which reminds me of my [Haskell days][1] - it has been a while and I don't remember much Haskell now, but the good feeling stays and so do my static type skills which I promptly decided to exercise now with Typescript.
+I am digging deeper into TypeScript which reminds me of my [Haskell days][1]. It has been a while and I don't remember much Haskell now, but the good feeling stays and so do my static type skills which I promptly decided to exercise now with TypeScript.
 
 ## Unions
 
-We can combine any two types into a [Union][2] type.
+We can combine any two types into a [union][2] type.
 
 ```ts
 type StringOrNumber = string | number;
@@ -22,7 +22,7 @@ type StringOrNumber = string | number;
 Or with TypeScript's [literal types][3]:
 
 ```ts
-type UserRole = "employee" | "admin" | "superadmin"
+type UserRole = "employee" | "admin" | "superadmin";
 ```
 
 ## Generics
@@ -31,8 +31,8 @@ Assume we have entities like `User`, `Company`, `Course`, etc., we can create an
 
 ```ts
 type ApiResponse = {
-    data: User | Company | Course
-    status: number
+    data: User | Company | Course;
+    status: number;
 }
 ```
 
@@ -63,27 +63,25 @@ We can create separate permissions for all admins (which includes `Admin` and `S
 type Permissions<T> = T extends Admin ? AdminPermissions : EmployeePermissions;
 ```
 
-## Distributive Unions
+## Distributive Conditional Types
 
-Generics can accept any type including Unions:
+Type parameters can be instantiated with any type, including unions:
 
 ```ts
 type Users = Array<User | Admin | SuperAdmin>;
 ```
 
-Now `Users` is of type `(User | Admin | SuperAdmin)[]`. Which means it is an array whose elements could be a mix of any of those three types of users. What if for some reason we want to ensure all elements of the array are of the same type? i.e. `User[] | Admin[] | SuperAdmin[]`
+Now `Users` is of type `(User | Admin | SuperAdmin)[]`. Which means it is an array whose elements could be a mix of any of those three types of users. But what if for some reason we want the type to represent one homogeneous array shape instead? That is, `User[] | Admin[] | SuperAdmin[]`.
 
 Essentially we want to "loop" over the union (`User | Admin | SuperAdmin`) and make each type an array. Conditional types have this "looping" behavior, formally called `distributivity`. We can use this to our benefit here:
 
 ```ts
-type StrictArray<T> = T extends T ? T[] : never
+type StrictArray<T> = T extends unknown ? T[] : never;
 
-type Users = StrictArray<User | Admin | SuperAdmin>
+type Users = StrictArray<User | Admin | SuperAdmin>;
 ```
 
-Now we have the desired type `User[] | Admin[] | SuperAdmin[]`.
-
-That `T extends T` seems redundant, but it is a dummy conditional to activate the distributivity .
+That `T extends unknown` seems redundant, but it is a dummy conditional that activates distributivity. Because `T` appears directly on the left side of `extends`, TypeScript applies the conditional to each member of the union, giving us our desired type `User[] | Admin[] | SuperAdmin[]`.
 
 [1]: https://github.com/tejasbubane/haskell-book-code
 [2]: https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types
