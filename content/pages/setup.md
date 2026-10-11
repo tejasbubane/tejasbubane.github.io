@@ -22,6 +22,8 @@ I am not a heavy phone user - apart from calls, whatsapp & twitter are my primar
 
 * Heavy user of [magit](https://magit.vc/) for all things git - this is hands-down `the best` git interface out there.
 
+* I use [Claude](https://claude.ai/), [Codex](https://openai.com/codex/), and [Cursor](https://cursor.com/) extensively as part of my everyday development workflow.
+
 * I switched to [Firefox](https://www.mozilla.org/en-US/firefox/) as my primary browser after its [quantum release](https://blog.mozilla.org/blog/2017/11/14/introducing-firefox-quantum/) and never looked back.
 
 * For terminal, I use [zsh](https://www.zsh.org/) using my [custom config](https://github.com/tejasbubane/dotfiles).
