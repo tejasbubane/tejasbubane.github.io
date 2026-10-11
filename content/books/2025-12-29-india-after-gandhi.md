@@ -7,6 +7,8 @@ My first and longest read of 2025.
 
 <!-- more -->
 
+<img src="/images/india-after-gandhi.jpg" alt="Cover of India After Gandhi by Ramachandra Guha, 10th anniversary edition" width="324" height="500" style="max-width: 200px;" />
+
 I bought a kindle in June and started reading. Daily commutes helped get into the habit. First book I picked up was [India after Gandhi by Ramchandra Guha][1].
 
 Starting with this huge 900+ pages book while getting into a reading habit after few years seems like a bad idea. But this book had been on the top of my TBR list for so long. And especially with all that is happening in the country today, I just had to read this.
