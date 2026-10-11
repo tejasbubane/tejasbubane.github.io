@@ -14,10 +14,12 @@ author = "Tejas Bubane"
 minify_html = true
 default_language = "en"
 
+[markdown]
+render_emoji = true
+external_links_target_blank = true
+
 [markdown.highlighting]
 theme = "github-dark"
-emoji_rendering = true
-external_links_target_blank = true
 
 [extra]
 even_title = "Tejas' Blog"

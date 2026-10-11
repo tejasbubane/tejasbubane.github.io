@@ -7,6 +7,8 @@ Built using [zola](https://www.getzola.org/) - a superfast static site generator
 `Zola` is a standalone binary which can be installed on all major platforms using package managers or from source.
 Instructions are [here](https://www.getzola.org/documentation/getting-started/installation/).
 
+Use Zola 0.23.1 or newer (locally verified with 0.23.6). The customized theme uses Tera 2 components and is incompatible with Zola 0.22 and earlier.
+
 ### Theme
 
 Theme used is [even](https://www.getzola.org/themes/even/).
