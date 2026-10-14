@@ -1,0 +1,13 @@
+{% extends "index.html" %}
+
+{% block title %}Work with Tejas | {{ config.title }}{% endblock title %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{{ get_url(path="hire-me.css", trailing_slash=false) }}">
+{% endblock extra_head %}
+
+{% block content %}
+  <div class="hire-pitch" id="mobile-panel">
+    {{ page.content | safe }}
+  </div>
+{% endblock content %}
