@@ -1,8 +1,9 @@
 +++
-title = "Services"
+title = "Hire me"
 description = "AI-native engineering backed by 13 years of shipping software. I help you build products, automate workflows, and get your systems moving again."
 template = "about.html"
-path = "services"
+path = "hire-me"
+aliases = ["services"]
 +++
 
 ## Got something worth building? Let's ship it. 🚀
