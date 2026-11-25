@@ -1,0 +1,23 @@
+@use "../themes/even/sass/site";
+@use "../themes/even/sass/variables";
+
+#header .menu a[href$="/hire-me"],
+.mobile-menu a[href$="/hire-me"] {
+  display: inline-block;
+  padding: 0.15em 0.55em;
+  border-radius: 4px;
+  background: variables.$secondary-colour;
+  color: darken(variables.$main-colour, 9%);
+  font-weight: 700;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+}
