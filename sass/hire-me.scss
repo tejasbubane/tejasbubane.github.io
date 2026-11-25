@@ -1,266 +1,95 @@
 @use "../themes/even/sass/variables";
 
-.hire-pitch a.booking-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  box-sizing: border-box;
-  max-width: 100%;
-  min-height: 52px;
-  margin: 0.5rem 0;
-  padding: 0.875rem 1.5rem;
-  border: 1px solid variables.$main-colour;
-  border-radius: 6px;
-  background: variables.$main-colour;
-  color: #fff;
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.5;
-  text-align: center;
-  text-decoration: none;
-  word-break: normal;
-  box-shadow: 0 3px 8px rgba(variables.$main-colour, 0.2);
-  transition: background-color 150ms ease, box-shadow 150ms ease;
-
-  &:hover {
-    background: darken(variables.$main-colour, 8%);
-    border-color: darken(variables.$main-colour, 8%);
-    box-shadow: 0 4px 12px rgba(variables.$main-colour, 0.3);
-  }
-
-  &:focus-visible {
-    outline: 3px solid variables.$main-colour;
-    outline-offset: 4px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-}
-
-// This stylesheet is loaded only by the Hire Me template.
-.container {
-  width: min(1100px, 100%);
-}
-
 .hire-pitch {
-  padding: 0 clamp(20px, 5vw, 64px) 32px;
-  font-size: 1.125rem;
+  $link-colour: darken(variables.$main-colour, 9%);
 
-  &, * {
-    box-sizing: border-box;
+  padding: 0 clamp(1.25rem, 5vw, 2.5rem) 2rem;
+  line-height: 1.65;
+
+  h1, h2 {
+    margin: 0 0 1rem;
+    font-family: Athelas, Georgia, serif;
+    font-weight: 400;
+    line-height: 1.15;
   }
 
-  h1, h2, h3, p {
+  h1 { font-size: clamp(2.5rem, 6vw, 3.75rem); }
+  h2 { font-size: clamp(1.75rem, 4vw, 2.125rem); }
+
+  p {
+    max-width: 65ch;
     margin: 0;
   }
 
-  h1, h2, h3 {
-    font-weight: 700;
-    text-wrap: balance;
+  p + p { margin-top: 0.75rem; }
+
+  a {
+    color: $link-colour;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+
+    &:focus-visible {
+      outline: 2px solid $link-colour;
+      outline-offset: 4px;
+    }
   }
 
-  h1 {
-    margin: 20px 0 24px;
-    font-size: clamp(2rem, 4.5vw, 2.75rem);
-    line-height: 1.1;
-    letter-spacing: -0.045em;
-
-    span { color: variables.$main-colour; }
+  .hire-intro {
+    padding: clamp(2rem, 6vw, 3.5rem) 0 2rem;
   }
 
-  h2 {
-    margin-bottom: 28px;
-    font-size: clamp(1.625rem, 3vw, 2rem);
-    line-height: 1.2;
-    letter-spacing: -0.035em;
-  }
+  .hire-lead { font-size: 1.125rem; }
 
-  h3 {
-    font-size: 1.25rem;
-    line-height: 1.35;
-    letter-spacing: -0.02em;
-  }
-
-  p { line-height: 1.7; }
-
-  a:focus-visible {
-    outline: 3px solid variables.$main-colour;
-    outline-offset: 4px;
-  }
-
-  .pitch-eyebrow {
-    margin-bottom: 14px;
-    color: variables.$main-colour;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .pitch-hero { padding: 64px 0 48px; }
-
-  .pitch-lead {
-    max-width: 650px;
-  }
-
-  .pitch-actions {
+  .hire-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px 28px;
-    margin-top: 24px;
+    gap: 0.75rem 1.25rem;
+    margin-top: 1.25rem;
   }
 
-  .pitch-text-link {
-    padding: 12px 0;
+  .booking-button {
+    padding: 0.55rem 0.9rem;
+    border-radius: 4px;
+    background: $link-colour;
+    color: #fff;
     font-weight: 600;
+    text-decoration: none;
+
+    &:hover { background: darken($link-colour, 7%); }
   }
 
-  .pitch-text-link:hover, .pitch-alternative a:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
-
-  .pitch-intro {
-    max-width: 620px;
-    margin-top: 24px;
-  }
-
-  .pitch-section {
-    padding: 48px 0;
-    border-top: 1px solid rgba(variables.$main-colour, 0.2);
-    scroll-margin-top: 72px;
-  }
-
-  .pitch-metrics {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 28px;
-    margin: 32px 0;
-
-    strong {
-      display: block;
-      color: variables.$main-colour;
-      font-size: clamp(2rem, 4vw, 2.25rem);
-      line-height: 1.2;
-      letter-spacing: -0.045em;
-    }
-
-    p {
-      margin-top: 8px;
-    }
-  }
-
-  .pitch-case {
-    padding: 28px 32px;
-    border-left: 3px solid variables.$main-colour;
-    border-radius: 0 8px 8px 0;
-    background: variables.$secondary-colour;
-
-    h3 { margin-bottom: 12px; }
-    .pitch-eyebrow { color: #34495e; }
-  }
-
-  .pitch-services {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-  }
-
-  .pitch-card {
-    display: flex;
-    flex-direction: column;
-    padding: 28px;
-    border: 1px solid rgba(variables.$main-colour, 0.22);
-    border-radius: 8px;
-
-    h3 { margin: 16px 0 12px; }
-
-    .pitch-card-detail {
-      margin-top: auto;
-      padding-top: 24px;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-  }
-
-  .pitch-number {
-    color: variables.$main-colour;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-  }
-
-  .pitch-card-wide {
-    grid-column: 1 / -1;
-    background: variables.$secondary-colour;
-
-    .pitch-number { color: #34495e; }
-  }
-
-  .pitch-steps {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 28px;
-    margin: 32px 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: step;
-
-    li {
-      counter-increment: step;
-
-      &::before {
-        content: "0" counter(step);
-        display: block;
-        margin-bottom: 16px;
-        color: variables.$main-colour;
-        font-weight: 700;
-      }
-    }
-
-    p { margin-top: 12px; }
-  }
-
-  .pitch-stack {
-    padding-top: 24px;
+  .hire-section {
+    padding: 1.75rem 0;
     border-top: 1px solid #e6e6e6;
-
-    span { font-weight: 700; }
-    p { margin-top: 8px; }
+    scroll-margin-top: calc(#{variables.$mobile-navbar-height} + 1rem);
   }
 
-  .pitch-close {
-    padding: clamp(24px, 5vw, 48px);
-    border-top: 3px solid variables.$main-colour;
-    border-radius: 0 0 8px 8px;
-    background: variables.$secondary-colour;
-    text-align: center;
+  .hire-case {
+    padding-left: 1rem;
+    border-left: 2px solid variables.$main-colour;
 
-    h2 { margin-bottom: 20px; }
-    > p { max-width: 560px; margin-inline: auto; }
-    .pitch-eyebrow { color: #34495e; }
-    .booking-button { margin-top: 28px; }
-    .pitch-alternative { margin-top: 20px; font-size: 1rem; }
-    .pitch-alternative a { color: #34495e; text-decoration: underline; }
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1.125rem;
+      line-height: 1.4;
+    }
   }
 
-  @media (max-width: 600px) {
-    .pitch-hero { padding-top: 36px; }
-    .pitch-section { padding: 36px 0; }
-    .pitch-metrics, .pitch-services, .pitch-steps {
-      grid-template-columns: 1fr;
-      gap: 24px;
-    }
-    .pitch-metrics > div {
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e6e6e6;
-    }
-    .pitch-card, .pitch-case { padding: 24px; }
-    .pitch-actions { align-items: stretch; gap: 8px; }
-    .pitch-actions > a { width: 100%; text-align: center; }
-    .pitch-close .booking-button { width: 100%; }
+  .hire-examples {
+    margin: 1rem 0 0;
+    padding-left: 1.25rem;
+
+    li + li { margin-top: 0.35rem; }
+    li::marker { color: $link-colour; }
+  }
+
+  .hire-services {
+    max-width: 65ch;
+    margin: 0;
+
+    dt { font-weight: 600; }
+    dd { margin: 0.25rem 0 0; }
+    dd + dt { margin-top: 1rem; }
   }
 }
